@@ -283,12 +283,9 @@ get_url() {
     case $2 in
       *manual|*testsuite)
 	true;;
-      tools|csg*)
+      tools|csg*|moo|kmc|ctp*)
 	[[ -z $rel ]] && die "${FUNCNAME}: rel variable not set"
-	echo "http://downloads.votca.googlecode.com/hg/votca-$2-$rel.tar.gz";;
-      moo|kmc|ctp*)
-	[[ -z $rel ]] && die "${FUNCNAME}: rel variable not set"
-	echo "http://downloads.votca-ctp.googlecode.com/hg/votca-$2-$rel.tar.gz";;
+	echo "https://github.com/votca/downloads/raw/master/votca-${2}-${rel}.tar.gz";;
       gromacs)
 	[[ -z $gromacs_ver ]] && die "${FUNCNAME}: gromacs_ver variable not set"
 	echo "ftp://ftp.gromacs.org/pub/gromacs/gromacs-${gromacs_ver}.tar.gz"
@@ -763,9 +760,15 @@ for prog in "${progs[@]}"; do
     fi
   fi
   if [ "$do_dist" = "yes" ]; then
-    [[ -d .hg ]] || die "I can only make a tarball out of a mercurial repository"
-    [[ $distcheck = "yes" && -n "$($HG status --modified)" ]] && die "There are uncommitted changes, they will not end up in the tarball, commit them first (disable this check with --no-distcheck option)"
-    [[ $distcheck = "yes" && -n "$($HG status --unknown)" ]] && die "There are unknown files, they will not end up in the tarball, rm/commit the files first (disable this check with --no-distcheck option)"
+    if [[ -d .hg ]]; then
+      [[ $distcheck = "yes" && -n "$($HG status --modified)" ]] && die "There are uncommitted changes, they will not end up in the tarball, commit them first (disable this check with --no-distcheck option)"
+      [[ $distcheck = "yes" && -n "$($HG status --unknown)" ]] && die "There are unknown files, they will not end up in the tarball, rm/commit the files first (disable this check with --no-distcheck option)"
+    elif [[ -d .git ]]; then
+      [[ $distcheck = "yes" && -n "$($GIT ls-files -m)" ]] && die "There are uncommitted changes, they will not end up in the tarball, commit them first (disable this check with --no-distcheck option)"
+      [[ $distcheck = "yes" && -n "$($GIT ls-files -o --exclude-standard)" ]] && die "There are unknown files, they will not end up in the tarball, rm/commit the files first (disable this check with --no-distcheck option)"
+    else
+      die "I can only make a tarball out of a mercurial or git repository"
+    fi	     
   fi
   if [ "$do_clean" == "yes" ]; then
     rm -f CMakeCache.txt
@@ -830,20 +833,20 @@ for prog in "${progs[@]}"; do
       ver="$(get_votca_version CMakeLists.txt)" || die
       exclude=( --exclude netbeans/ --exclude src/csg_boltzmann/nbproject/ )
       [ "$distext" = "_pristine" ] && exclude+=( --exclude src/libboost/ )
-      "$HG" archive "${exclude[@]}" --type files "votca-${prog}-${ver}" || die "$HG archive failed"
       if [[ $prog = csg || $prog = ctp ]]; then
-        [[ -f votca-${prog}-${ver}/CHANGELOG.md ]] || die "No CHANGELOG.md in ${prog}"
-	[[ $changelogcheck = "yes" && -z $(grep "^## Version ${ver} " "votca-${prog}-${ver}"/CHANGELOG.md) ]] && \
+        [[ -f CHANGELOG.md ]] || die "No CHANGELOG.md in ${prog}"
+	[[ $changelogcheck = "yes" && -z $(grep "^## Version ${ver} " CHANGELOG.md) ]] && \
           die "Go and update CHANGELOG.md in ${prog} before making a release"
       fi
-      #overwrite is the default behaviour of hg archive, emulate it!
-      rm -f ../"votca-${prog}-${ver}${distext}.tar" ../"votca-${prog}-${ver}${distext}.tar.gz"
-      tar -cf ../"votca-${prog}-${ver}${distext}.tar" "votca-${prog}-${ver}"/*
-      rm -r "votca-${prog}-${ver}"
-      gzip -9 ../"votca-${prog}-${ver}${distext}.tar"
+      if [[ -d .hg ]]; then
+        "$HG" archive "${exclude[@]}" --prefix "votca-${prog}-${ver}" "../votca-${prog}-${ver}.tar.gz" || die "$HG archive failed"
+      elif [[ -d .git ]]; then
+        "$GIT" archive --prefix "votca-${prog}-${ver}/" -o "../votca-${prog}-${ver}.tar.gz" HEAD || die "$GIT archive failed"
+      else
+        die "I can only make a tarball out of a mercurial or git repository"
+      fi	     
     else
-      [ -z "${REL}" ] && die "No CMakeLists.txt found and environment variable REL was not defined"
-      "$HG" archive --prefix "votca-${prog}-${REL}" --type tgz "../votca-${prog}-${REL}${distext}.tar.gz" || die "$HG archive failed"
+      die "${prog} is not a manual and has no cmake build system - not sure what to do"
     fi
   fi
   popd > /dev/null || die "Could not change back"
