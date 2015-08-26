@@ -76,16 +76,14 @@
 #version 1.9.5 -- 20.03.15 added --use-git to support cloning from github
 #version 1.9.6 -- 27.06.15 added --use-hg
 #version 1.9.7 -- 23.08.15 make git the default vcs system
+#version 2.0.0 -- 25.08.15 removed everything hg
 
 #defaults
 usage="Usage: ${0##*/} [options] [progs]"
 prefix="$HOME/votca"
 
 #this gets overriden by --dev option
-#progs on https://code.google.com/p/votca
-votca_progs="tools csg csg-tutorials csgapps csg-testsuite csg-manual"
-#all possible programs
-all_progs="${votca_progs} gromacs"
+all_progs="tools csg csg-tutorials csgapps csg-testsuite csg-manual gromacs"
 #programs to build by default
 standard_progs="tools csg"
 
@@ -129,12 +127,11 @@ for i in cmake-gui ccmake cmake; do
 done
 cmake_gui="$i"
 cmake_builddir="."
-use_git=yes
 
 rel=""
 selfurl="https://raw.githubusercontent.com/votca/buildutil/master/build.sh"
 clurl="https://raw.githubusercontent.com/votca/csg/stable/CHANGELOG.md"
-pathname="default"
+remote="origin"
 gromacs_ver="4.6.7" #bump after 1.3 release
 
 rpath_opt="-DCMAKE_INSTALL_RPATH_USE_LINK_PATH=ON"
@@ -142,7 +139,6 @@ cmake_opts=()
 MAKE_OPTS=
 distext=""
 
-HG="${HG:=hg}"
 GIT="${GIT:=git}"
 WGET="${WGET:=wget}"
 
@@ -268,14 +264,8 @@ get_url() {
   [[ -z $1 || -z $2  ]] && die "${FUNCNAME}: Missing argument"
   if [[ $1 = source ]]; then
     case $2 in
-      tools|csg*)
-	[[ ${use_git} =  yes ]] && \
-          echo "git://github.com/votca/$2" || \
-          echo "https://code.google.com/p/votca.$2";;
-      moo|kmc|ctp*)
-	[[ ${use_git} =  yes ]] && \
-          echo "git://github.com/votca/$2" || \
-          echo "https://code.google.com/p/votca-ctp.$2";;
+      tools|csg*|moo|kmc|ctp*)
+        echo "git://github.com/votca/$2";;
       gromacs)
 	echo "git://git.gromacs.org/gromacs";;
     esac
@@ -335,10 +325,10 @@ show_help () {
     Please visit: $(cecho BLUE www.votca.org)
 
     The normal sequence of a build is:
-    - hg/git clone (if src is not there)
+    - git clone (if src is not there)
       and checkout stable branch unless --dev given
       (or downloads tarballs if --release given)
-    - hg pull + hg update / git pull --ff-only (if --do-update given)
+    - git pull --ff-only (if --do-update given)
     - run cmake (unless --no-cmake)
     - make clean (unless --no-clean given)
     - make (unless --no-build given)
@@ -358,15 +348,15 @@ ADV     $(cecho GREEN --log) $(cecho CYAN FILE)          Generate a file with al
 ADV     $(cecho GREEN --nocolor)           Disable color
 ADV     $(cecho GREEN --selfupdate)        Do a self update
 ADV $(cecho GREEN -d), $(cecho GREEN --dev)               Switch to developer mode
-ADV     $(cecho GREEN --release) $(cecho CYAN REL)       Get Release tarball instead of using hg/git clone
+ADV     $(cecho GREEN --release) $(cecho CYAN REL)       Get Release tarball instead of using git clone
 ADV     $(cecho GREEN --gmx-release) $(cecho CYAN REL)   Use custom gromacs release
 ADV                         Default: $gromacs_ver
     $(cecho GREEN -l), $(cecho GREEN --latest)            Get the latest tarball
-    $(cecho GREEN -u), $(cecho GREEN --do-update)         Do a update of the sources from pullpath $pathname
+    $(cecho GREEN -u), $(cecho GREEN --do-update)         Do a update of the sources from remote $remote
                             or the votca server as fail back
 ADV $(cecho GREEN -U), $(cecho GREEN --just-update)       Just update the source and do nothing else
-ADV     $(cecho GREEN --pullpath) $(cecho CYAN NAME)     Changes the name of the path to pull from
-ADV                         Default: $pathname (Also see 'hg paths --help')
+ADV     $(cecho GREEN --remote) $(cecho CYAN NAME)       Changes the remote to pull from
+ADV                         Default: $remote
 ADV $(cecho GREEN -c), $(cecho GREEN --clean-out)         Clean out the prefix (DANGEROUS)
 ADV $(cecho GREEN -C), $(cecho GREEN --clean-ignored)     Remove ignored file from repository (SUPER DANGEROUS)
 ADV     $(cecho GREEN --no-cmake)          Do not run cmake
@@ -396,8 +386,6 @@ ADV     $(cecho GREEN --cmake) $(cecho CYAN CMD)         Use $(cecho CYAN CMD) i
 ADV                         Default: $cmake
 ADV     $(cecho GREEN --ninja)             Use ninja instead of make
 ADV                         Default: cmake's default (make)
-ADV     $(cecho GREEN --use-hg)            Use hg instead of git
-ADV                         Default: $([[ $use_git = yes ]] && echo no || echo yes)
 ADV     $(cecho GREEN --builddir) $(cecho CYAN DIR)      Do an out-of-source build in $(cecho CYAN DIR)
 ADV                         Default: $cmake_builddir
         $(cecho GREEN --gui)               Use cmake with gui (same as $(cecho GREEN --cmake) $(cecho CYAN $cmake_gui))
@@ -451,7 +439,7 @@ while [[ $# -gt 0 ]]; do
    -v | --version)
     echo "${0##*/}, version $(get_version "$0")"
     exit 0;;
-   --hg)
+   --git)
     sed -ne 's/^#version[[:space:]]*\([^[:space:]]*\)[[:space:]]*-- [0-9][0-9]\.[0-9][0-9]\.[0-9][0-9] \(.*\)$/\2/p' "$0" | sed -n '$p'
     exit 0;;
    --selfupdate)
@@ -480,8 +468,8 @@ while [[ $# -gt 0 ]]; do
    -U | --just-update)
     do_update="only"
     shift 1;;
-   --pullpath)
-    pathname="$2"
+   --remote)
+    remote="$2"
     shift 2;;
    --gui)
      cmake="$cmake_gui"
@@ -495,9 +483,6 @@ while [[ $# -gt 0 ]]; do
      shift 2;;
    --ninja)
      cmake_opts+=( -G Ninja )
-     shift 1;;
-   --use-hg)
-     use_git="no"
      shift 1;;
    --Wall)
     cmake_opts+=( -DCMAKE_CXX_FLAGS='-Wall' )
@@ -631,87 +616,44 @@ for prog in "${progs[@]}"; do
     cecho BLUE "Source dir ($prog) is already there - skipping download"
     countdown 5
   elif [[ -n $rel && -z $(get_url release $prog) ]]; then
-    cecho BLUE "Program $prog has no release tarball I will get it from the its mercurial repository"
-    [[ $prog = "gromacs" ]] && die "Automatic checkout is not supported for gromacs, yet" #should never happen...
-    [[ -z $(get_url source $prog) ]] && die "but I don't know its source url - get it yourself and put it in dir $prog"
+    cecho BLUE "Program $prog has no release tarball I will get it from the its git repository"
+    [[ -z $(get_url source $prog) ]] && die "but I don't know its source url - get it yourself and put it in $prog"
+    [ -z "$(type -p "$GIT")" ] && die "Could not find $GIT, please install git (http://http://git-scm.com/)"
     countdown 5
-    [ -z "$(type -p "$HG")" ] && die "Could not find $HG, please install mercurial (http://mercurial.selenic.com/)"
-    "$HG" clone "$(get_url source "$prog")" "$prog"
+    "$GIT" clone "$(get_url source "$prog")" "$prog"
   elif [[ -n $rel && -n $(get_url release "$prog") ]]; then
     download_and_upack_tarball "$(get_url release "$prog")"
   else
     [[ -z $(get_url source $prog) ]] && die "I don't know the source url of $prog - get it yourself and put it in dir $prog"
     cecho BLUE "Doing checkout for $prog from $(get_url source $prog)"
     countdown 5
-    if [[ $(get_url source $prog) != *git* ]]; then
-      [[ -z "$(type -p "$HG")" ]] && die "Could not find $HG, please install mercurial (http://mercurial.selenic.com/)"
-      "$HG" clone "$(get_url source $prog)" "$prog"
-    else
-      [[ -z "$(type -p "$GIT")" ]] && die "Could not find $GIT, please install git (http://http://git-scm.com/)"
-      "$GIT" clone "$(get_url source $prog)" "$prog"
-    fi
-    if [[ -d ${prog}/.hg && ${dev} = "no" ]]; then
-      if [[ -n $("$HG" branches -R "$prog" | sed -n '/^stable[[:space:]]/p' ) ]]; then
+    [[ -z "$(type -p "$GIT")" ]] && die "Could not find $GIT, please install git (http://http://git-scm.com/)"
+    "$GIT" clone "$(get_url source $prog)" "$prog"
+    pushd "$prog" > /dev/null || die "Could not change into $prog"
+    if [[ $prog = gromacs ]]; then 
+      "$GIT" checkout "release-${gromacs_ver:0:1}-${gromacs_ver:2:1}" #e.g. release-5-1
+    elif [[ ${dev} = "no" ]]; then
+      if [[ -n $("$GIT" branch --list stable) || -n $("$GIT" branch -r --list origin/stable) ]]; then
         cecho BLUE "Switching to stable branch add --dev option to prevent that"
-        "$HG" update -R "$prog" stable
+        "$GIT" checkout stable
       else
-	cecho BLUE "No stable branch found, skipping switching!"
+        cecho BLUE "No stable branch found, skipping switching!"
       fi
-    elif [[ -d ${prog}/.git ]]; then
-      pushd "$prog" > /dev/null || die "Could not change into $prog"
-      #TODO add support for other branches
-      if [[ $prog = gromacs ]]; then 
-        if [[ $gromacs_ver = 5.0* ]]; then
-          "$GIT" checkout release-5-0
-        elif [[ $gromacs_ver = 4.6* ]]; then
-          "$GIT" checkout release-4-6
-        else
-          die "Only gromacs 4.6 and 5.0 are supported, yet"
-        fi
-      elif [[ ${dev} = "no" ]]; then
-        if [[ -n $("$GIT" branch --list stable) || -n $("$GIT" branch -r --list origin/stable) ]]; then
-          cecho BLUE "Switching to stable branch add --dev option to prevent that"
-          "$GIT" checkout stable
-        else
-          cecho BLUE "No stable branch found, skipping switching!"
-        fi
-      fi
-      popd > /dev/null || die "Could not change back"
     fi
+    popd > /dev/null || die "Could not change back"
   fi
 
   pushd "$prog" > /dev/null || die "Could not change into $prog"
   if [[ $do_update == "yes" || $do_update == "only" ]]; then
-    [[ $(get_url source $prog) = *git* && -d .hg ]] && \
-      die "You cannot use git to update an hg repository, please add the --use-hg option or re-clone $prog by removing it first ('rm -r $prog')"
-    [[ $(get_url source $prog) != *git* && -d .git ]] && \
-	    die "You cannot use hg to update an git repository, please drop the --use-hg option or re-clone $prog by removing it first ('rm -r $prog')"
     if [ -n "$rel" ]; then
       cecho BLUE "Update of a release tarball doesn't make sense, skipping"
       countdown 5
-    elif [[ -d .hg || -d .git ]]; then
-      cecho GREEN "updating $([[ -d .hg ]] && echo hg || echo git) repository"
-      [[ $pathname = default ]] && origin="origin" || origin="$pathname" #TODO improve
-      [[ -d .hg ]] && pullpath=$("$HG" path "$pathname" 2> /dev/null || true) || pullpath=$("$GIT" config --get remote."${origin}".url 2> /dev/null || true)
-      if [ -z "${pullpath}" ]; then
-        [[ -z $(get_url source $prog) ]] && \
-	  die "I don't know the source url of $prog - do the update of $prog yourself"
-	pullpath=$(get_url source $prog)
-	cecho BLUE "Could not fetch pull path '$([[ -d .hg ]] && echo "$pathname" || echo "$origin")', using $pullpath instead"
-	countdown 5
-      else
-	cecho GREEN "from $pullpath"
-      fi
-      if [[ -d .hg ]]; then
-        "$HG" pull "${pullpath}"
-        cecho GREEN "We are on branch $(cecho BLUE "$("$HG" branch)")"
-        "$HG" update
-      elif [[ -d .git ]]; then
-        cecho GREEN "We are on branch $(cecho BLUE "$("$GIT" rev-parse --abbrev-ref HEAD)")"
-        "$GIT" pull --ff-only "$origin"
-      fi
+    elif [[ -d .git ]]; then
+      cecho GREEN "updating git repository $prog from $remote"
+      cecho GREEN "We are on branch $(cecho BLUE "$("$GIT" rev-parse --abbrev-ref HEAD)")"
+      "$GIT" pull --ff-only "$remote"
     else
-      cecho BLUE "$prog dir doesn't seem to be a hg/git repository, skipping update"
+      cecho BLUE "$prog dir doesn't seem to be a git repository, skipping update"
       countdown 5
     fi
   fi
@@ -719,55 +661,36 @@ for prog in "${progs[@]}"; do
     popd > /dev/null || die "Could not change back"
     continue
   fi
-  if [[ -d .hg ]]; then
-    [[ -z $branch ]] && branch="$($HG branch)"
-    if [[ $branchcheck = "yes" ]]; then
-      [[ $dev = "no" && -n $($HG branches | sed -n '/^stable[[:space:]]/p' ) && $($HG branch) != "stable" ]] && \
-        die "We build the stable version of $prog, but we are on branch $($HG branch) and not 'stable'. Please checkout the stable branch with 'hg update -R $prog stable' or add --dev option (disable this check with the --no-branchcheck option)"
-      [[ $dev = "yes" && $($HG branch) = "stable" ]] && \
-	die "We build the devel version of $prog, but we are on the stable branch. Please checkout a devel branch like default with 'hg update -R $prog default' (disable this check with the --no-branchcheck option)"
-      #prevent to build devel csg with stable tools and so on
-      [[ $branch != $("$HG" branch) ]] && die "You are mixing branches: '$branch' (in $last_prog) vs '$($HG branch) (in $prog)' (disable this check with the --no-branchcheck option)\n You can change the branch with 'hg update BRANCHNAME'."
-    fi
-    [[ $branch = $($HG branch) ]] || cecho PURP "You are mixing branches: '$branch' vs '$($HG branch)'"
-  elif [[ -d .git && $branchcheck = "yes" ]]; then
+  if [[ $branchcheck = "yes" ]]; then
     if [[ $prog = gromacs ]]; then
-      [[ $("$GIT" rev-parse --abbrev-ref HEAD) != release-@(4-6|5-0) ]] && \
-        die "We only support release branches 4.6 and higher in gromacs! Please checkout one of these, preferably the 5.0 release with: 'cd gromacs; git checkout release-5-0' (disable this check with the --no-branchcheck option)"
+      [[ $("$GIT" rev-parse --abbrev-ref HEAD) != release-?-? ]] && \
+        die "We only support release branches in gromacs! Please checkout one of these, preferably the >5.0 release with: 'git -C gromacs checkout release-5-0' (disable this check with the --no-branchcheck option)"
     else
       [[ -z $branch ]] && branch="$("$GIT" rev-parse --abbrev-ref HEAD)"
       [[ $dev = "no" ]] && [[ -n $($GIT branch --list stable) || -n $("$GIT" branch -r --list origin/stable) ]] && [[ $($GIT rev-parse --abbrev-ref HEAD) != "stable" ]] && \
-        die "We build the stable version of $prog, but we are on branch $($GIT rev-parse --abbrev-ref HEAD) and not 'stable'. Please checkout the stable branch with 'git checkout stable' or add --dev option (disable this check with the --no-branchcheck option)"
+        die "We build the stable version of $prog, but we are on branch $($GIT rev-parse --abbrev-ref HEAD) and not 'stable'. Please checkout the stable branch with 'git -C $prog checkout stable' or add --dev option (disable this check with the --no-branchcheck option)"
       [[ $dev = "yes" && $("$GIT" rev-parse --abbrev-ref HEAD) = "stable" ]] && \
-	die "We build the devel version of $prog, but we are on the stable branch. Please checkout a devel branch like default with 'git checkout master' (disable this check with the --no-branchcheck option)"
+	die "We build the devel version of $prog, but we are on the stable branch. Please checkout a devel branch like default with 'git -C $prog checkout master' (disable this check with the --no-branchcheck option)"
       #prevent to build devel csg with stable tools and so on
-      [[ $branch != $("$GIT" rev-parse --abbrev-ref HEAD) ]] && die "You are mixing branches: '$branch' (in $last_prog) vs '$("$GIT" rev-parse --abbrev-ref HEAD) (in $prog)' (disable this check with the --no-branchcheck option)\n You can change the branch with 'git checkout BRANCHNAME'."
+      [[ $branch != $("$GIT" rev-parse --abbrev-ref HEAD) ]] && die "You are mixing branches: '$branch' (in $last_prog) vs '$("$GIT" rev-parse --abbrev-ref HEAD) (in $prog)' (disable this check with the --no-branchcheck option)\n You can change the branch with 'git -C $prog checkout BRANCHNAME'."
     fi
   fi
   if [ "$do_clean_ignored" = "yes" ]; then
-    if [[ -d .hg || -d .git ]]; then
+    if [[ -d .git ]]; then
       cecho BLUE "I will remove all ignored files from $prog"
       countdown 5
-      if [[ -d .hg ]]; then
-        "$HG" status --print0 --no-status --ignored | xargs --null rm -f
-      else
-	"$GIT" clean -fdX
-      fi
-      find . -type d -empty -delete &> /dev/null #remove all empty dirs
+      "$GIT" clean -fdX
     else
-      cecho BLUE "$prog dir doesn't seem to be a hg/git repository, skipping remove of ignored files"
+      cecho BLUE "$prog dir doesn't seem to be a git repository, skipping remove of ignored files"
       countdown 5
     fi
   fi
   if [ "$do_dist" = "yes" ]; then
-    if [[ -d .hg ]]; then
-      [[ $distcheck = "yes" && -n "$($HG status --modified)" ]] && die "There are uncommitted changes, they will not end up in the tarball, commit them first (disable this check with --no-distcheck option)"
-      [[ $distcheck = "yes" && -n "$($HG status --unknown)" ]] && die "There are unknown files, they will not end up in the tarball, rm/commit the files first (disable this check with --no-distcheck option)"
-    elif [[ -d .git ]]; then
+    if [[ -d .git ]]; then
       [[ $distcheck = "yes" && -n "$($GIT ls-files -m)" ]] && die "There are uncommitted changes, they will not end up in the tarball, commit them first (disable this check with --no-distcheck option)"
       [[ $distcheck = "yes" && -n "$($GIT ls-files -o --exclude-standard)" ]] && die "There are unknown files, they will not end up in the tarball, rm/commit the files first (disable this check with --no-distcheck option)"
     else
-      die "I can only make a tarball out of a mercurial or git repository"
+      die "I can only make a tarball out of a git repository"
     fi	     
   fi
   if [ "$do_clean" == "yes" ]; then
@@ -838,13 +761,7 @@ for prog in "${progs[@]}"; do
 	[[ $changelogcheck = "yes" && -z $(grep "^## Version ${ver} " CHANGELOG.md) ]] && \
           die "Go and update CHANGELOG.md in ${prog} before making a release"
       fi
-      if [[ -d .hg ]]; then
-        "$HG" archive "${exclude[@]}" --prefix "votca-${prog}-${ver}" "../votca-${prog}-${ver}.tar.gz" || die "$HG archive failed"
-      elif [[ -d .git ]]; then
-        "$GIT" archive --prefix "votca-${prog}-${ver}/" -o "../votca-${prog}-${ver}.tar.gz" HEAD || die "$GIT archive failed"
-      else
-        die "I can only make a tarball out of a mercurial or git repository"
-      fi	     
+      "$GIT" archive --prefix "votca-${prog}-${ver}/" -o "../votca-${prog}-${ver}.tar.gz" HEAD || die "$GIT archive failed"
     else
       die "${prog} is not a manual and has no cmake build system - not sure what to do"
     fi
