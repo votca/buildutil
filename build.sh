@@ -131,7 +131,6 @@ cmake_builddir="."
 rel=""
 selfurl="https://raw.githubusercontent.com/votca/buildutil/master/build.sh"
 clurl="https://raw.githubusercontent.com/votca/csg/stable/CHANGELOG.md"
-remote="origin"
 gromacs_ver="4.6.7" #bump after 1.3 release
 
 rpath_opt="-DCMAKE_INSTALL_RPATH_USE_LINK_PATH=ON"
@@ -352,11 +351,8 @@ ADV     $(cecho GREEN --release) $(cecho CYAN REL)       Get Release tarball ins
 ADV     $(cecho GREEN --gmx-release) $(cecho CYAN REL)   Use custom gromacs release
 ADV                         Default: $gromacs_ver
     $(cecho GREEN -l), $(cecho GREEN --latest)            Get the latest tarball
-    $(cecho GREEN -u), $(cecho GREEN --do-update)         Do a update of the sources from remote $remote
-                            or the votca server as fail back
+    $(cecho GREEN -u), $(cecho GREEN --do-update)         Do an update of the sources using git
 ADV $(cecho GREEN -U), $(cecho GREEN --just-update)       Just update the source and do nothing else
-ADV     $(cecho GREEN --remote) $(cecho CYAN NAME)       Changes the remote to pull from
-ADV                         Default: $remote
 ADV $(cecho GREEN -c), $(cecho GREEN --clean-out)         Clean out the prefix (DANGEROUS)
 ADV $(cecho GREEN -C), $(cecho GREEN --clean-ignored)     Remove ignored file from repository (SUPER DANGEROUS)
 ADV     $(cecho GREEN --no-cmake)          Do not run cmake
@@ -468,9 +464,6 @@ while [[ $# -gt 0 ]]; do
    -U | --just-update)
     do_update="only"
     shift 1;;
-   --remote)
-    remote="$2"
-    shift 2;;
    --gui)
      cmake="$cmake_gui"
      shift ;;
@@ -649,9 +642,9 @@ for prog in "${progs[@]}"; do
       cecho BLUE "Update of a release tarball doesn't make sense, skipping"
       countdown 5
     elif [[ -d .git ]]; then
-      cecho GREEN "updating git repository $prog from $remote"
+      cecho GREEN "updating git repository $prog from $(git rev-parse --abbrev-ref @{u})"
       cecho GREEN "We are on branch $(cecho BLUE "$("$GIT" rev-parse --abbrev-ref HEAD)")"
-      "$GIT" pull --ff-only "$remote"
+      "$GIT" pull --ff-only
     else
       cecho BLUE "$prog dir doesn't seem to be a git repository, skipping update"
       countdown 5
