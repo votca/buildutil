@@ -111,6 +111,7 @@ do_dist="no"
 do_devdoc="no"
 dev="no"
 wait=
+verbose=
 tests=()
 
 changelogcheck="yes"
@@ -135,7 +136,6 @@ gromacs_ver="4.6.7" #bump after 1.3 release
 
 rpath_opt="-DCMAKE_INSTALL_RPATH_USE_LINK_PATH=ON"
 cmake_opts=()
-MAKE_OPTS=
 distext=""
 
 GIT="${GIT:=git}"
@@ -287,9 +287,9 @@ get_url() {
 make_or_ninja() {
   [[ -f Makefile && -f build.ninja ]] && die "$prog is configured to use Ninja and make, which won't work, add --clean-ignored to the command line once"
   if [[ -f Makefile ]]; then
-    make "$@"
+    make -j${j} ${verbose:+VERBOSE=1} "$@"
   elif [[ -f build.ninja ]]; then
-    ninja "$@"
+    ninja -j${j} ${verbose:+-v} "$@"
   else
     cecho BLUE "Neither Makefile nor build.ninja found, skipping"
   fi
@@ -354,7 +354,7 @@ ADV                         Default: $gromacs_ver
     $(cecho GREEN -u), $(cecho GREEN --do-update)         Do an update of the sources using git
 ADV $(cecho GREEN -U), $(cecho GREEN --just-update)       Just update the source and do nothing else
 ADV $(cecho GREEN -c), $(cecho GREEN --clean-out)         Clean out the prefix (DANGEROUS)
-ADV $(cecho GREEN -C), $(cecho GREEN --clean-ignored)     Remove ignored file from repository (SUPER DANGEROUS)
+ADV   $(cecho GREEN --clean-ignored)       Remove ignored file from repository (SUPER DANGEROUS)
 ADV     $(cecho GREEN --no-cmake)          Do not run cmake
 ADV $(cecho GREEN -D)$(cecho CYAN '*')                     Extra cmake options (maybe multiple times)
 ADV                         Do NOT put variables (XXX=YYY) here, just use environment variables
@@ -365,8 +365,8 @@ ADV $(cecho GREEN -R), $(cecho GREEN --no-rpath)          Remove rpath from the 
 ADV     $(cecho GREEN --no-clean)          Don't run make clean
 ADV $(cecho GREEN -j), $(cecho GREEN --jobs) $(cecho CYAN N)            Allow N jobs at once for make
 ADV                         Default: $j (auto)
-ADV     $(cecho GREEN --verbose)           Run make in verbose mode
-ADV     $(cecho GREEN --directory) $(cecho CYAN DIR)     Change into $(cecho CYAN DIR) before doing anything
+ADV     $(cecho GREEN --verbose)           Run make/ninja in verbose mode
+ADV $(cecho GREEN -C), $(cecho GREEN --directory) $(cecho CYAN DIR)     Change into $(cecho CYAN DIR) before doing anything
 ADV     $(cecho GREEN --no-build)          Don't build the source
 ADV $(cecho GREEN -W), $(cecho GREEN --no-wait)           Do not wait, at critical points (DANGEROUS)
 ADV     $(cecho GREEN --no-install)        Don't run make install
@@ -455,7 +455,7 @@ while [[ $# -gt 0 ]]; do
    -c | --clean-out)
     do_prefix_clean="yes"
     shift 1;;
-   -C | --clean-ignored)
+   --clean-ignored)
     do_clean_ignored="yes"
     shift 1;;
    -j | --jobs)
@@ -464,9 +464,9 @@ while [[ $# -gt 0 ]]; do
     j="$2"
     shift 2;;
    --verbose)
-     MAKE_OPTS+=" VERBOSE=1"
+     verbose=yes
      shift 1;;
-   --directory)
+   -C | --directory)
      cd "$2" || die "Could not change into directory '$2'"
      shift 2;;
    --no-build)
@@ -583,7 +583,7 @@ echo "Install prefix is '$prefix'"
 [[ -n $CPPFLAGS ]] && echo "CPPFLAGS is '$CPPFLAGS'"
 [[ -n $CXXFLAGS ]] && echo "CXXFLAGS is '$CXXFLAGS'"
 [[ -n $LDFLAGS ]] && echo "LDFLAGS is '$LDFLAGS'"
-cecho BLUE "Using $j jobs for make"
+cecho BLUE "Using $j jobs for make/ninja"
 
 [[ $do_prefix_clean = "yes" ]] && prefix_clean
 
@@ -713,15 +713,15 @@ for prog in "${progs[@]}"; do
   fi
   if [[ $do_clean == "yes" ]]; then
     cecho GREEN "cleaning $prog"
-    make_or_ninja ${MAKE_OPTS} clean
+    make_or_ninja clean
   fi
   if [[ $do_build == "yes" ]]; then
     cecho GREEN "buidling $prog"
-    make_or_ninja -j"${j}" ${MAKE_OPTS}
+    make_or_ninja
   fi
   if [[ "$do_install" == "yes" ]]; then
     cecho GREEN "installing $prog"
-    make_or_ninja -j"${j}" ${MAKE_OPTS} install
+    make_or_ninja install
   fi
   if [[ -f $cmake_srcdir/CMakeLists.txt ]]; then
     popd > /dev/null || die "Could not change back"
