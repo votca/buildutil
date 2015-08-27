@@ -297,7 +297,7 @@ make_or_ninja() {
 }
 
 version_check() {
-  old_version="$(get_version "${0}")"
+  old_version="$(get_version "${self}")"
   [ "$1" = "-q" ] && new_version="$(get_webversion -q)" || new_version="$(get_webversion)"
   [ "$1" = "-q" ] || cecho BLUE "Version of $selfurl is: $new_version"
   [ "$1" = "-q" ] || cecho BLUE "Local Version: $old_version"
@@ -310,7 +310,7 @@ self_update() {
   if version_check; then
     cecho RED "I will try replace myself now with $selfurl"
     countdown 5
-    "${WGET}" -O "${0}" "${selfurl}"
+    "${WGET}" -O "${self}" "${selfurl}"
   else
     cecho GREEN "No updated needed"
   fi
@@ -401,16 +401,7 @@ ADV                         Default: $cmake_builddir
 eof
 }
 
-if version_check -q; then
-  x=${0##*/}; x=${x//?/#}
-  cecho RED "########################################$x"
-  cecho RED "# Your version of VOTCA ${0##*/} is obsolete ! #"
-  cecho RED "# Please run '${0##*/} --selfupdate'           #"
-  cecho RED "########################################$x"
-  die
-  unset x
-fi
-
+[[ ${0} = /* ]] && self="${0}" || self="${PWD}/${0}" || self="${0}" 
 #save before parsing for --log
 cmdopts=( "$@" )
 # parse arguments
@@ -434,8 +425,8 @@ while [[ $# -gt 0 ]]; do
     if [[ -z ${VOTCA_LOG} ]]; then
       echo "Logfile is $(cecho PURP "$2")"
       export VOTCA_LOG="$2"
-      echo "Log of '${0} ${cmdopts[@]// /\\ }'" > "$2"
-      "${0}" "${cmdopts[@]}" | tee -a "$2"
+      echo "Log of '${self} ${cmdopts[@]// /\\ }'" > "$2"
+      "${self}" "${cmdopts[@]}" | tee -a "$2"
       exit $?
     fi
     shift 2;;
@@ -446,10 +437,10 @@ while [[ $# -gt 0 ]]; do
    show_help | sed -e 's/^ADV/   /' -e 's/^    //'
    exit 0;;
    -v | --version)
-    echo "${0##*/}, version $(get_version "$0")"
+    echo "${0##*/}, version $(get_version "${self}")"
     exit 0;;
    --git)
-    sed -ne 's/^#version[[:space:]]*\([^[:space:]]*\)[[:space:]]*-- [0-9][0-9]\.[0-9][0-9]\.[0-9][0-9] \(.*\)$/\2/p' "$0" | sed -n '$p'
+    sed -ne 's/^#version[[:space:]]*\([^[:space:]]*\)[[:space:]]*-- [0-9][0-9]\.[0-9][0-9]\.[0-9][0-9] \(.*\)$/\2/p' "${self}" | sed -n '$p'
     exit 0;;
    --selfupdate)
     self_update
@@ -584,13 +575,23 @@ while [[ $# -gt 0 ]]; do
  esac
 done
 
+if version_check -q; then
+  x=${0##*/}; x=${x//?/#}
+  cecho RED "########################################$x"
+  cecho RED "# Your version of VOTCA ${0##*/} is obsolete ! #"
+  cecho RED "# Please run '${0##*/} --selfupdate'           #"
+  cecho RED "########################################$x"
+  die
+  unset x
+fi
+
 [[ ${#progs[@]} -eq 0 ]] && progs=( $standard_progs )
 [[ -z $prefix ]] && die "Error: prefix is empty"
 [[ $prefix = *WHERE/TO/INSTALL/VOTCA* ]] && die "Deine Mutti!!!\nGo and read the instruction again."
 [[ $prefix = /* ]] || die "prefix has to be a global path (should start with a '/')"
 
 #infos
-cecho GREEN "This is VOTCA ${0##*/}, version $(get_version "$0")"
+cecho GREEN "This is VOTCA ${0##*/}, version $(get_version "${self}")"
 echo "Install prefix is '$prefix'"
 [[ -n $CPPFLAGS ]] && echo "CPPFLAGS is '$CPPFLAGS'"
 [[ -n $CXXFLAGS ]] && echo "CXXFLAGS is '$CXXFLAGS'"
