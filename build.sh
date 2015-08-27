@@ -113,6 +113,7 @@ dev="no"
 wait=
 verbose=
 tests=()
+git_depth=
 
 changelogcheck="yes"
 branchcheck="yes"
@@ -383,6 +384,7 @@ ADV     $(cecho GREEN --cmake) $(cecho CYAN CMD)         Use $(cecho CYAN CMD) i
 ADV                         Default: $cmake
 ADV     $(cecho GREEN --ninja)             Use ninja instead of make
 ADV                         Default: cmake's default (make)
+ADV     $(cecho GREEN --depth) $(cecho CYAN D)           Only git clone to depth $(cecho CYAN D) instead of whole history
 ADV     $(cecho GREEN --builddir) $(cecho CYAN DIR)      Do an out-of-source build in $(cecho CYAN DIR)
 ADV                         Default: $cmake_builddir
         $(cecho GREEN --gui)               Use cmake with gui (same as $(cecho GREEN --cmake) $(cecho CYAN $cmake_gui))
@@ -467,6 +469,7 @@ while [[ $# -gt 0 ]]; do
      verbose=yes
      shift 1;;
    -C | --directory)
+     [[ -z $2 ]] && die "Missing argument after --directory"
      cd "$2" || die "Could not change into directory '$2'"
      shift 2;;
    --no-build)
@@ -482,15 +485,22 @@ while [[ $# -gt 0 ]]; do
      cmake="$cmake_gui"
      shift ;;
    --cmake)
+    [[ -z $2 ]] && die "Missing argument after --cmake"
     cmake="$2"
     [[ -z $(type -p "$cmake") ]] && die "Custom cmake '$cmake' not found"
     shift 2;;
    --builddir)
+     [[ -z $2 ]] && die "Missing argument after --builddir"
      cmake_builddir="$2"
      shift 2;;
    --ninja)
      cmake_opts+=( -G Ninja )
      shift 1;;
+   --depth)
+     [[ -z $2 ]] && die "Missing argument after --depth"
+     [[ -n ${2//[0-9]} ]] && die "Argument after --depth should be a number"
+     git_depth="$2"
+     shift 2;;
    --Wall)
     cmake_opts+=( -DCMAKE_CXX_FLAGS='-Wall' )
     shift ;;
@@ -501,6 +511,7 @@ while [[ $# -gt 0 ]]; do
     rpath_opt=""
     shift 1;;
    --runtest)
+    [[ -z $2 ]] && die "Missing argument after --runtests"
     tests+=( "$2" )
     shift 2;;
    --dist)
@@ -533,6 +544,7 @@ while [[ $# -gt 0 ]]; do
     prefix="$2"
     shift 2;;
   -D)
+    [[ -z $2 ]] && die "Missing argument after --D"
     cmake_opts+=( -D"${2}" )
     shift 2;;
   --minimal)
@@ -617,7 +629,7 @@ for prog in "${progs[@]}"; do
     [[ -z $(get_url source $prog) ]] && die "but I don't know its source url - get it yourself and put it in $prog"
     [ -z "$(type -p "$GIT")" ] && die "Could not find $GIT, please install git (http://http://git-scm.com/)"
     countdown 5
-    "$GIT" clone "$(get_url source "$prog")" "$prog"
+    "$GIT" clone ${git_depth:+--depth $git_depth} "$(get_url source "$prog")" "$prog"
   elif [[ -n $rel && -n $(get_url release "$prog") ]]; then
     download_and_upack_tarball "$(get_url release "$prog")"
   else
@@ -625,7 +637,7 @@ for prog in "${progs[@]}"; do
     cecho BLUE "Doing checkout for $prog from $(get_url source $prog)"
     countdown 5
     [[ -z "$(type -p "$GIT")" ]] && die "Could not find $GIT, please install git (http://http://git-scm.com/)"
-    "$GIT" clone "$(get_url source $prog)" "$prog"
+    "$GIT" clone ${git_depth:+--depth $git_depth} "$(get_url source $prog)" "$prog"
     pushd "$prog" > /dev/null || die "Could not change into $prog"
     if [[ $prog = gromacs ]]; then 
       "$GIT" checkout "release-${gromacs_ver:0:1}-${gromacs_ver:2:1}" #e.g. release-5-1
