@@ -671,7 +671,7 @@ for prog in "${progs[@]}"; do
     popd > /dev/null || die "Could not change back"
     continue
   fi
-  if [[ $branchcheck = "yes" ]]; then
+  if [[ -d .git && $branchcheck = "yes" ]]; then
     if [[ $prog = gromacs ]]; then
       [[ $("$GIT" rev-parse --abbrev-ref HEAD) != release-?-? ]] && \
         die "We only support release branches in gromacs! Please checkout one of these, preferably the >5.0 release with: 'git -C gromacs checkout release-5-0' (disable this check with the --no-branchcheck option)"
