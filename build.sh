@@ -296,7 +296,7 @@ make_or_ninja() {
 }
 
 version_check() {
-  old_version="$(get_version "$0")"
+  old_version="$(get_version "${0}")"
   [ "$1" = "-q" ] && new_version="$(get_webversion -q)" || new_version="$(get_webversion)"
   [ "$1" = "-q" ] || cecho BLUE "Version of $selfurl is: $new_version"
   [ "$1" = "-q" ] || cecho BLUE "Local Version: $old_version"
@@ -366,6 +366,7 @@ ADV     $(cecho GREEN --no-clean)          Don't run make clean
 ADV $(cecho GREEN -j), $(cecho GREEN --jobs) $(cecho CYAN N)            Allow N jobs at once for make
 ADV                         Default: $j (auto)
 ADV     $(cecho GREEN --verbose)           Run make in verbose mode
+ADV     $(cecho GREEN --directory) $(cecho CYAN DIR)     Change into $(cecho CYAN DIR) before doing anything
 ADV     $(cecho GREEN --no-build)          Don't build the source
 ADV $(cecho GREEN -W), $(cecho GREEN --no-wait)           Do not wait, at critical points (DANGEROUS)
 ADV     $(cecho GREEN --no-install)        Don't run make install
@@ -397,6 +398,16 @@ ADV                         Default: $cmake_builddir
 
 eof
 }
+
+if version_check -q; then
+  x=${0##*/}; x=${x//?/#}
+  cecho RED "########################################$x"
+  cecho RED "# Your version of VOTCA ${0##*/} is obsolete ! #"
+  cecho RED "# Please run '${0##*/} --selfupdate'           #"
+  cecho RED "########################################$x"
+  die
+  unset x
+fi
 
 #save before parsing for --log
 cmdopts=( "$@" )
@@ -455,6 +466,9 @@ while [[ $# -gt 0 ]]; do
    --verbose)
      MAKE_OPTS+=" VERBOSE=1"
      shift 1;;
+   --directory)
+     cd "$2" || die "Could not change into directory '$2'"
+     shift 2;;
    --no-build)
     do_build="no"
     shift 1;;
@@ -557,16 +571,6 @@ while [[ $# -gt 0 ]]; do
    shift 1;;
  esac
 done
-
-if version_check -q; then
-  x=${0##*/}; x=${x//?/#}
-  cecho RED "########################################$x"
-  cecho RED "# Your version of VOTCA ${0##*/} is obsolete ! #"
-  cecho RED "# Please run '${0##*/} --selfupdate'           #"
-  cecho RED "########################################$x"
-  die
-  unset x
-fi
 
 [[ ${#progs[@]} -eq 0 ]] && progs=( $standard_progs )
 [[ -z $prefix ]] && die "Error: prefix is empty"
