@@ -630,7 +630,7 @@ for prog in "${progs[@]}"; do
     [[ -z $(get_url source $prog) ]] && die "but I don't know its source url - get it yourself and put it in $prog"
     [ -z "$(type -p "$GIT")" ] && die "Could not find $GIT, please install git (http://http://git-scm.com/)"
     countdown 5
-    "$GIT" clone ${git_depth:+--depth $git_depth} "$(get_url source "$prog")" "$prog"
+    "$GIT" clone ${git_depth:+--no-single-branch --depth $git_depth} "$(get_url source "$prog")" "$prog"
   elif [[ -n $rel && -n $(get_url release "$prog") ]]; then
     download_and_upack_tarball "$(get_url release "$prog")"
   else
@@ -638,7 +638,7 @@ for prog in "${progs[@]}"; do
     cecho BLUE "Doing checkout for $prog from $(get_url source $prog)"
     countdown 5
     [[ -z "$(type -p "$GIT")" ]] && die "Could not find $GIT, please install git (http://http://git-scm.com/)"
-    "$GIT" clone ${git_depth:+--depth $git_depth} "$(get_url source $prog)" "$prog"
+    "$GIT" clone ${git_depth:+--no-single-branch --depth $git_depth} "$(get_url source $prog)" "$prog"
     pushd "$prog" > /dev/null || die "Could not change into $prog"
     if [[ $prog = gromacs ]]; then 
       "$GIT" checkout "release-${gromacs_ver:0:1}-${gromacs_ver:2:1}" #e.g. release-5-1
