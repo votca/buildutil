@@ -77,6 +77,7 @@
 #version 1.9.6 -- 27.06.15 added --use-hg
 #version 1.9.7 -- 23.08.15 make git the default vcs system
 #version 2.0.0 -- 25.08.15 removed everything hg
+#version 2.0.1 -- 09.09.15 added proxy workaround for git
 
 #defaults
 usage="Usage: ${0##*/} [options] [progs]"
@@ -265,8 +266,12 @@ get_url() {
   if [[ $1 = source ]]; then
     case $2 in
       tools|csg*|moo|kmc|ctp*)
+	[[ -n $http_proxy || -n $https_proxy ]] && \
+        echo "https://github.com/votca/$2" || \
         echo "git://github.com/votca/$2";;
       gromacs)
+	[[ -n $http_proxy || -n $https_proxy ]] && \
+	echo "https://gerrit.gromacs.org/gromacs.git" || \
 	echo "git://git.gromacs.org/gromacs";;
     esac
   elif [[ $1 = release ]]; then
