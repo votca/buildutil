@@ -71,13 +71,14 @@
 #version 1.9.0 -- 02.09.14 added --builddir and --ninja
 #version 1.9.1 -- 09.09.14 added --runtest option
 #version 1.9.2 -- 28.12.14 added --gmx-release option and gmx 5.0 support
-#version 1.9.3 -- 01.03.15 dopped support for espressopp
+#version 1.9.3 -- 01.03.15 dropped support for espressopp
 #version 1.9.4 -- 13.03.15 moved selfurl to github
 #version 1.9.5 -- 20.03.15 added --use-git to support cloning from github
 #version 1.9.6 -- 27.06.15 added --use-hg
 #version 1.9.7 -- 23.08.15 make git the default vcs system
 #version 2.0.0 -- 25.08.15 removed everything hg
 #version 2.0.1 -- 09.09.15 added proxy workaround for git
+#version 2.0.2 -- 23.09.15 dropped --dist-pristine 
 
 #defaults
 usage="Usage: ${0##*/} [options] [progs]"
@@ -379,9 +380,7 @@ ADV     $(cecho GREEN --no-install)        Don't run make install
 ADV     $(cecho GREEN --runtest) $(cecho CYAN DIR)       Run one step $(cecho CYAN DIR) as a test, when csg-tutorials is build (EXPERIMENTAL)
 ADV                         Use CSG_MDRUN_STEPS environment variable to control the number of steps to run.
 ADV     $(cecho GREEN --dist)              Create a dist tarball and move it here
-ADV                         (implies $(cecho GREEN --warn-to-errors) and $(cecho GREEN -D)$(cecho CYAN EXTERNAL_BOOST=OFF))
-ADV     $(cecho GREEN --dist-pristine)     Create a pristine dist tarball (without bundled libs) and move it here
-ADV                         (implies $(cecho GREEN --warn-to-errors) and $(cecho GREEN -D)$(cecho CYAN EXTERNAL_BOOST=ON))
+ADV                         (implies $(cecho GREEN --warn-to-errors))
 ADV     $(cecho GREEN --warn-to-errors)    Turn all warnings into errors (same as  $(cecho GREEN -D)$(cecho CYAN CMAKE_CXX_FLAGS=\'-Wall -Werror\'))
 ADV     $(cecho GREEN --Wall)              Show more warnings (same as $(cecho GREEN -D)$(cecho CYAN CMAKE_CXX_FLAGS=-Wall))
 ADV     $(cecho GREEN --devdoc)            Build a combined html doxygen for all programs (useful with $(cecho GREEN -U))
@@ -513,13 +512,7 @@ while [[ $# -gt 0 ]]; do
    --dist)
     do_dist="yes"
     do_clean="yes"
-    cmake_opts+=( -DEXTERNAL_BOOST=OFF -DCMAKE_CXX_FLAGS='-Wall -Werror' )
-    shift 1;;
-   --dist-pristine)
-    do_dist="yes"
-    do_clean="yes"
-    cmake_opts+=( -DEXTERNAL_BOOST=ON -DCMAKE_CXX_FLAGS='-Wall -Werror' )
-    distext="_pristine"
+    cmake_opts+=( -DCMAKE_CXX_FLAGS='-Wall -Werror' )
     shift 1;;
    --devdoc)
     do_devdoc="yes"
@@ -760,7 +753,6 @@ for prog in "${progs[@]}"; do
   fi
   if [ "$do_dist" = "yes" ]; then
     cecho GREEN "packing $prog"
-    [[ -n $distext && $prog != "tools" ]] && die "pristine distribution can only be done for votca tools"
     #if we are here we know that make and make install worked
     if [ -f manual.tex ]; then
       ver="$(sed -n 's/VER=[[:space:]]*\([^[:space:]]*\)[[:space:]]*$/\1/p' Makefile)" || die "Could not get version of the manual"
@@ -770,7 +762,6 @@ for prog in "${progs[@]}"; do
     elif [ -f CMakeLists.txt ]; then
       ver="$(get_votca_version CMakeLists.txt)" || die
       exclude=( --exclude netbeans/ --exclude src/csg_boltzmann/nbproject/ )
-      [ "$distext" = "_pristine" ] && exclude+=( --exclude src/libboost/ )
       if [[ $prog = csg || $prog = ctp ]]; then
         [[ -f CHANGELOG.md ]] || die "No CHANGELOG.md in ${prog}"
 	[[ $changelogcheck = "yes" && -z $(grep "^## Version ${ver} " CHANGELOG.md) ]] && \
