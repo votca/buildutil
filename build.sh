@@ -79,6 +79,7 @@
 #version 2.0.0 -- 25.08.15 removed everything hg
 #version 2.0.1 -- 09.09.15 added proxy workaround for git
 #version 2.0.2 -- 23.09.15 dropped --dist-pristine 
+#version 2.0.2 -- 23.09.15 bump gmx version
 
 #defaults
 usage="Usage: ${0##*/} [options] [progs]"
@@ -135,7 +136,7 @@ cmake_builddir="."
 rel=""
 selfurl="https://raw.githubusercontent.com/votca/buildutil/master/build.sh"
 clurl="https://raw.githubusercontent.com/votca/csg/stable/CHANGELOG.md"
-gromacs_ver="4.6.7" #bump after 1.3 release
+gromacs_ver="5.0.6"
 
 rpath_opt="-DCMAKE_INSTALL_RPATH_USE_LINK_PATH=ON"
 cmake_opts=()
@@ -400,7 +401,7 @@ ADV                         Default: $cmake_builddir
                ${0##*/} -u
                ${0##*/} --release ${latest} tools csg
                ${0##*/} --dev --longhelp
-               CC=g++ ${0##*/} -DWITH_GMX_DEVEL=ON csg
+               CC=g++ ${0##*/} -DWITH_GMX=OFF csg
 
 eof
 }
@@ -597,12 +598,6 @@ echo "Install prefix is '$prefix'"
 cecho BLUE "Using $j jobs for make/ninja"
 
 [[ $do_prefix_clean = "yes" ]] && prefix_clean
-
-#drop after 1.3 release
-if [[ $dev = no && $gromacs_ver = 5.0* ]]; then 
-  cecho BLUE "Auto-adding WITH_GMX_DEVEL=ON to cmake option as gromacs 5.0 is being used" 
-  cmake_opts+=( -DWITH_GMX_DEVEL=ON ) #remove after 1.3 is released
-fi
 
 set -e
 for prog in "${progs[@]}"; do
