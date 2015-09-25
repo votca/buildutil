@@ -659,6 +659,7 @@ for prog in "${progs[@]}"; do
         cecho PURP "Checking out pull request ${TRAVIS_PULL_REQUEST}"
         git fetch origin +refs/pull/"${TRAVIS_PULL_REQUEST}"/merge:
 	git checkout FETCH_HEAD
+	branchcheck=no #we are in a detached branch at this point
       fi
     else
       cecho BLUE "$prog dir doesn't seem to be a git repository, skipping update"
