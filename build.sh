@@ -661,10 +661,10 @@ for prog in "${progs[@]}"; do
           cecho PURP "Checking out pull request ${TRAVIS_PULL_REQUEST} from git://github.com/${TRAVIS_REPO_SLUG}"
           git fetch "git://github.com/${TRAVIS_REPO_SLUG}" +refs/pull/"${TRAVIS_PULL_REQUEST}"/merge:
           git checkout FETCH_HEAD
-        elif [[ ${TRAVIS_REPO_SLUG} != votca/* ]]; then
-          cecho PURP "Checking out branch ${TRAVIS_BRANCH} from git://github.com/${TRAVIS_REPO_SLUG}"
+        else
+          cecho PURP "Checking out ${TRAVIS_COMMIT} of branch ${TRAVIS_BRANCH} from git://github.com/${TRAVIS_REPO_SLUG}"
           git fetch "git://github.com/${TRAVIS_REPO_SLUG}" "${TRAVIS_BRANCH}"
-          git chechout FETCH_HEAD
+          git checkout "${TRAVIS_COMMIT}"
         fi
       fi
     else
