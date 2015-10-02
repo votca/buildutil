@@ -655,11 +655,17 @@ for prog in "${progs[@]}"; do
       cecho GREEN "updating git repository $prog from $(git rev-parse --abbrev-ref @{u})"
       cecho GREEN "We are on branch $(cecho BLUE "$("$GIT" rev-parse --abbrev-ref HEAD)")"
       "$GIT" pull --ff-only
-      if [[ ${TRAVIS} = true && ${TRAVIS_REPO_SLUG} = */${prog} && ${TRAVIS_PULL_REQUEST} != false ]]; then
-        cecho PURP "Checking out pull request ${TRAVIS_PULL_REQUEST}"
-        git fetch origin +refs/pull/"${TRAVIS_PULL_REQUEST}"/merge:
-	git checkout FETCH_HEAD
-	branchcheck=no #we are in a detached branch at this point
+      if [[ ${TRAVIS} = true && ${TRAVIS_REPO_SLUG} = */${prog} ]]; then
+        branchcheck=no #travis users hopefully know what they are doing
+        if [[ ${TRAVIS_PULL_REQUEST} != false ]]; then
+          cecho PURP "Checking out pull request ${TRAVIS_PULL_REQUEST} from git://github.com/${TRAVIS_REPO_SLUG}"
+          git fetch "git://github.com/${TRAVIS_REPO_SLUG}" +refs/pull/"${TRAVIS_PULL_REQUEST}"/merge:
+          git checkout FETCH_HEAD
+        elif [[ ${TRAVIS_REPO_SLUG} != votca/* ]]; then
+          cecho PURP "Checking out branch ${TRAVIS_BRANCH} from git://github.com/${TRAVIS_REPO_SLUG}"
+          git fetch "git://github.com/${TRAVIS_REPO_SLUG}" "${TRAVIS_BRANCH}"
+          git chechout FETCH_HEAD
+        fi
       fi
     else
       cecho BLUE "$prog dir doesn't seem to be a git repository, skipping update"
