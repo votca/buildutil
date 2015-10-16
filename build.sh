@@ -663,7 +663,8 @@ for prog in "${progs[@]}"; do
           git checkout FETCH_HEAD
         else
           cecho PURP "Checking out ${TRAVIS_COMMIT} of branch ${TRAVIS_BRANCH} from git://github.com/${TRAVIS_REPO_SLUG}"
-          git fetch "git://github.com/${TRAVIS_REPO_SLUG}" "${TRAVIS_BRANCH}"
+	  #hopefully TRAVIS_COMMIT is within the last 10 commits
+          git fetch --depth=10 "git://github.com/${TRAVIS_REPO_SLUG}" "${TRAVIS_BRANCH}"
           git checkout "${TRAVIS_COMMIT}"
         fi
       fi
