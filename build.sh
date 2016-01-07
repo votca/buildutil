@@ -547,7 +547,7 @@ while [[ $# -gt 0 ]]; do
     shift 2;;
    --gmx-release)
     gromacs_ver="$2"
-    [[ $relcheck = "yes" && ${2} != [1-9].[0-9]?(.[1-9]|-rc[1-9]) ]] && \
+    [[ $relcheck = "yes" && ${2} != +([1-9]).[0-9]?(.[1-9]|-rc[1-9]) ]] && \
       die "--release option needs an argument which is a release (disable this check with --no-relcheck option)"
     shift 2;;
    -l | --latest)
@@ -633,8 +633,17 @@ for prog in "${progs[@]}"; do
     [[ -z "$(type -p "$GIT")" ]] && die "Could not find $GIT, please install git (http://http://git-scm.com/)"
     "$GIT" clone ${git_depth:+--no-single-branch --depth $git_depth} "$(get_url source $prog)" "$prog"
     pushd "$prog" > /dev/null || die "Could not change into $prog"
-    if [[ $prog = gromacs ]]; then 
-      "$GIT" checkout "release-${gromacs_ver:0:1}-${gromacs_ver:2:1}" #e.g. release-5-1
+    if [[ $prog = gromacs ]]; then
+      if [[ ${gromacs_ver} = [45].[0-9]* ]]; then
+        gmx_branch="release-${gromacs_ver:0:1}-${gromacs_ver:2:1}" #e.g. release-5-1
+      elif [[ ${gromacs_ver} = 201[6-9]* ]]; then
+        gmx_branch="release-${gromacs_ver:0:4}" #e.g. release-2016
+      elif [[ ${gromacs_ver} = 9999 ]]; then
+        gmx_branch="master"
+      else
+        die "I don't on which branch gromacs version $gromacs_ver sits"
+      fi
+      "$GIT" checkout "${gmx_branch}"
     elif [[ ${dev} = "no" ]]; then
       if [[ -n $("$GIT" branch --list stable) || -n $("$GIT" branch -r --list origin/stable) ]]; then
         cecho BLUE "Switching to stable branch add --dev option to prevent that"
