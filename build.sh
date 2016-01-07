@@ -542,12 +542,12 @@ while [[ $# -gt 0 ]]; do
     shift;;
    --release)
     rel="$2"
-    [[ $relcheck = "yes" && ${rel} != [1-9]?(.[0-9])?(.[1-9]|_rc[1-9])?(_pristine) ]] && \
+    [[ $relcheck = "yes" && ${rel} != [1-9].[0-9]?(.[1-9]|_rc[1-9])?(_pristine) ]] && \
       die "--release option needs an argument which is a release (disable this check with --no-relcheck option)"
     shift 2;;
    --gmx-release)
     gromacs_ver="$2"
-    [[ $relcheck = "yes" && ${2} != +([1-9]).[0-9]?(.[1-9]|-rc[1-9]) ]] && \
+    [[ $relcheck = "yes" && ${2} != +([1-9])?(.[0-9])?(.[1-9]|-rc[1-9]) ]] && \
       die "--gmx-release option needs an argument which is a release (disable this check with --no-relcheck option)"
     shift 2;;
    -l | --latest)
