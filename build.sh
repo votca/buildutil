@@ -542,13 +542,13 @@ while [[ $# -gt 0 ]]; do
     shift;;
    --release)
     rel="$2"
-    [[ $relcheck = "yes" && ${rel} != [1-9].[0-9]?(.[1-9]|_rc[1-9])?(_pristine) ]] && \
+    [[ $relcheck = "yes" && ${rel} != [1-9]?(.[0-9])?(.[1-9]|_rc[1-9])?(_pristine) ]] && \
       die "--release option needs an argument which is a release (disable this check with --no-relcheck option)"
     shift 2;;
    --gmx-release)
     gromacs_ver="$2"
     [[ $relcheck = "yes" && ${2} != +([1-9]).[0-9]?(.[1-9]|-rc[1-9]) ]] && \
-      die "--release option needs an argument which is a release (disable this check with --no-relcheck option)"
+      die "--gmx-release option needs an argument which is a release (disable this check with --no-relcheck option)"
     shift 2;;
    -l | --latest)
     [[ -z $(type -p "${WGET}") ]] && die "${WGET} not found, specify it by hand using --release option"
@@ -638,7 +638,7 @@ for prog in "${progs[@]}"; do
         gmx_branch="release-${gromacs_ver:0:1}-${gromacs_ver:2:1}" #e.g. release-5-1
       elif [[ ${gromacs_ver} = 201[6-9]* ]]; then
         gmx_branch="release-${gromacs_ver:0:4}" #e.g. release-2016
-      elif [[ ${gromacs_ver} = 9999 ]]; then
+      elif [[ ${gromacs_ver} = 9999* ]]; then
         gmx_branch="master"
       else
         die "I don't on which branch gromacs version $gromacs_ver sits"
