@@ -79,7 +79,8 @@
 #version 2.0.0 -- 25.08.15 removed everything hg
 #version 2.0.1 -- 09.09.15 added proxy workaround for git
 #version 2.0.2 -- 23.09.15 dropped --dist-pristine 
-#version 2.0.2 -- 23.09.15 bump gmx version
+#version 2.0.3 -- 23.09.15 bump gmx version
+#version 2.0.3 -- 13.01.16 dropped --dist
 
 #defaults
 usage="Usage: ${0##*/} [options] [progs]"
