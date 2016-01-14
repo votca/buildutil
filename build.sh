@@ -281,7 +281,9 @@ get_url() {
 	true;;
       tools|csg*|moo|kmc|ctp*|*manual)
 	[[ -z $rel ]] && die "${FUNCNAME}: rel variable not set"
-	echo "https://github.com/votca/downloads/raw/master/votca-${2}-${rel}.tar.gz";;
+	[[ $rel = 1.[012]* ]] && 
+	echo "https://github.com/votca/downloads/raw/master/votca-${2}-${rel}.tar.gz" || \
+	echo "https://github.com/votca/${2}/archive/v${rel}.tar.gz";;
       gromacs)
 	[[ -z $gromacs_ver ]] && die "${FUNCNAME}: gromacs_ver variable not set"
 	echo "ftp://ftp.gromacs.org/pub/gromacs/gromacs-${gromacs_ver}.tar.gz"
