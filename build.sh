@@ -110,7 +110,6 @@ do_clean="yes"
 do_install="yes"
 
 do_update="no"
-do_dist="no"
 do_devdoc="no"
 dev="no"
 wait=
@@ -140,7 +139,6 @@ gromacs_ver="5.0.6"
 
 rpath_opt="-DCMAKE_INSTALL_RPATH_USE_LINK_PATH=ON"
 cmake_opts=()
-distext=""
 
 GIT="${GIT:=git}"
 WGET="${WGET:=wget}"
@@ -278,9 +276,9 @@ get_url() {
     esac
   elif [[ $1 = release ]]; then
     case $2 in
-      *manual|*testsuite)
+      *testsuite)
 	true;;
-      tools|csg*|moo|kmc|ctp*)
+      tools|csg*|moo|kmc|ctp*|*manual)
 	[[ -z $rel ]] && die "${FUNCNAME}: rel variable not set"
 	echo "https://github.com/votca/downloads/raw/master/votca-${2}-${rel}.tar.gz";;
       gromacs)
@@ -380,8 +378,6 @@ ADV $(cecho GREEN -W), $(cecho GREEN --no-wait)           Do not wait, at critic
 ADV     $(cecho GREEN --no-install)        Don't run make install
 ADV     $(cecho GREEN --runtest) $(cecho CYAN DIR)       Run one step $(cecho CYAN DIR) as a test, when csg-tutorials is build (EXPERIMENTAL)
 ADV                         Use CSG_MDRUN_STEPS environment variable to control the number of steps to run.
-ADV     $(cecho GREEN --dist)              Create a dist tarball and move it here
-ADV                         (implies $(cecho GREEN --warn-to-errors))
 ADV     $(cecho GREEN --warn-to-errors)    Turn all warnings into errors (same as  $(cecho GREEN -D)$(cecho CYAN CMAKE_CXX_FLAGS=\'-Wall -Werror\'))
 ADV     $(cecho GREEN --Wall)              Show more warnings (same as $(cecho GREEN -D)$(cecho CYAN CMAKE_CXX_FLAGS=-Wall))
 ADV     $(cecho GREEN --devdoc)            Build a combined html doxygen for all programs (useful with $(cecho GREEN -U))
@@ -510,11 +506,6 @@ while [[ $# -gt 0 ]]; do
     [[ -z $2 ]] && die "Missing argument after --runtests"
     tests+=( "$2" )
     shift 2;;
-   --dist)
-    do_dist="yes"
-    do_clean="yes"
-    cmake_opts+=( -DCMAKE_CXX_FLAGS='-Wall -Werror' )
-    shift 1;;
    --devdoc)
     do_devdoc="yes"
     shift 1;;
@@ -710,14 +701,6 @@ for prog in "${progs[@]}"; do
       countdown 5
     fi
   fi
-  if [ "$do_dist" = "yes" ]; then
-    if [[ -d .git ]]; then
-      [[ $distcheck = "yes" && -n "$($GIT ls-files -m)" ]] && die "There are uncommitted changes, they will not end up in the tarball, commit them first (disable this check with --no-distcheck option)"
-      [[ $distcheck = "yes" && -n "$($GIT ls-files -o --exclude-standard)" ]] && die "There are unknown files, they will not end up in the tarball, rm/commit the files first (disable this check with --no-distcheck option)"
-    else
-      die "I can only make a tarball out of a git repository"
-    fi	     
-  fi
   if [ "$do_clean" == "yes" ]; then
     rm -f CMakeCache.txt
   fi
@@ -767,27 +750,6 @@ for prog in "${progs[@]}"; do
       fi
       popd > /dev/null
     done
-  fi
-  if [ "$do_dist" = "yes" ]; then
-    cecho GREEN "packing $prog"
-    #if we are here we know that make and make install worked
-    if [ -f manual.tex ]; then
-      ver="$(sed -n 's/VER=[[:space:]]*\([^[:space:]]*\)[[:space:]]*$/\1/p' Makefile)" || die "Could not get version of the manual"
-      [ -z "${ver}" ] && die "Version of the manual was empty"
-      [ -f "manual.pdf" ] || die "Could not find manual.pdf"
-      cp manual.pdf ../"votca-${prog}-${ver}${distext}.pdf" || die "cp of manual failed"
-    elif [ -f CMakeLists.txt ]; then
-      ver="$(get_votca_version CMakeLists.txt)" || die
-      exclude=( --exclude netbeans/ --exclude src/csg_boltzmann/nbproject/ )
-      if [[ $prog = csg || $prog = ctp ]]; then
-        [[ -f CHANGELOG.md ]] || die "No CHANGELOG.md in ${prog}"
-	[[ $changelogcheck = "yes" && -z $(grep "^## Version ${ver} " CHANGELOG.md) ]] && \
-          die "Go and update CHANGELOG.md in ${prog} before making a release"
-      fi
-      "$GIT" archive --prefix "votca-${prog}-${ver}/" -o "../votca-${prog}-${ver}.tar.gz" HEAD || die "$GIT archive failed"
-    else
-      die "${prog} is not a manual and has no cmake build system - not sure what to do"
-    fi
   fi
   popd > /dev/null || die "Could not change back"
   cecho GREEN "done with $prog"
