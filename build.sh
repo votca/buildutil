@@ -217,16 +217,16 @@ countdown() {
 
 download_and_upack_tarball() {
   local url tarball tardir
-  [[ -z $1 ]] && die "${FUNCNAME}: Missing argument"
+  [[ -z $1 || -z $2 ]] && die "${FUNCNAME}: Missing argument"
   url="$1"
-  tarball="${url##*/}"
+  tarball="$2"
   cecho GREEN "Download tarball $tarball from ${url}"
   if [ "$self_download" = "no" ]; then
     [ -f "$tarball" ] && die "Tarball $tarball is already there, remove it first or add --selfdownload option"
     [ -z "$(type -p "${WGET}")" ] && die "${WGET} is missing"
     "${WGET}" "${url}"
   fi
-  [ -f "${tarball}" ] || die "${WGET} has failed to fetch the tarball (add --selfdownload option and copy ${tarball} here by hand)"
+  [ -f "${tarball}" ] || die "${WGET} has failed to fetch the tarball (add --selfdownload option and copy ${tarball} in ${PWD} by hand)"
   tardir="$(tar -tzf "${tarball}" | sed -e's#/.*$##' | sort -u)"
   [ -z "${tardir//*\\n*}" ] && die "Tarball $tarball contains zero or more then one directory ($tardir), please check by hand"
   [ -e "${tardir}" ] && die "Tarball unpack directory ${tardir} is already there, remove it first"
@@ -536,7 +536,7 @@ while [[ $# -gt 0 ]]; do
     shift;;
    --release)
     rel="$2"
-    [[ $relcheck = "yes" && ${rel} != [1-9].[0-9]?(.[1-9]|_rc[1-9])?(_pristine) ]] && \
+    [[ $relcheck = "yes" && ${rel} != [1-9].[0-9]?(.[1-9]|_rc[1-9]) ]] && \
       die "--release option needs an argument which is a release (disable this check with --no-relcheck option)"
     shift 2;;
    --gmx-release)
@@ -619,7 +619,7 @@ for prog in "${progs[@]}"; do
     countdown 5
     "$GIT" clone ${git_depth:+--no-single-branch --depth $git_depth} "$(get_url source "$prog")" "$prog"
   elif [[ -n $rel && -n $(get_url release "$prog") ]]; then
-    download_and_upack_tarball "$(get_url release "$prog")"
+    download_and_upack_tarball "$(get_url release "$prog")" "votca-${prog}-${rel}.tar.gz"
   else
     [[ -z $(get_url source $prog) ]] && die "I don't know the source url of $prog - get it yourself and put it in dir $prog"
     cecho BLUE "Doing checkout for $prog from $(get_url source $prog)"
