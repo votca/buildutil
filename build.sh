@@ -266,7 +266,7 @@ get_url() {
   [[ -z $1 || -z $2  ]] && die "${FUNCNAME}: Missing argument"
   if [[ $1 = source ]]; then
     case $2 in
-      tools|csg*|moo|kmc|ctp*)
+      tools|csg*|moo|kmc|ctp*|xtp*)
 	[[ -n $http_proxy || -n $https_proxy ]] && \
         echo "https://github.com/votca/$2" || \
         echo "git://github.com/votca/$2";;
@@ -557,7 +557,7 @@ while [[ $# -gt 0 ]]; do
     shift;;
    -d | --dev)
     dev=yes
-    all_progs="${all_progs} moo kmc ctp ctp-manual ctp-tutorials"
+    all_progs="${all_progs} moo kmc ctp ctp-manual ctp-tutorials xtp"
     shift 1;;
   -*)
    die "Unknown option '$1'"
