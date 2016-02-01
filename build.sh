@@ -178,7 +178,7 @@ build_devdoc() {
   ver=$(get_votca_version tools/CMakeLists.txt) || die
   sed -e '/^PROJECT_NAME /s/=.*$/= Votca/' \
       -e '/^PROJECT_NUMBER /s/=.*$/= '"$ver/" \
-      -e '/^INPUT /s/=.*$/= '"${progs[*]}/" \
+      -e '/^INPUT /s/=.*$/= '"${progs[*]/gromacs}/" \
       -e '/^HTML_FOOTER /s/=.*$/= footer.html/' \
       -e '/^HTML_OUTPUT /s/=.*$/= devdoc/' \
       tools/share/doc/Doxyfile.in > Doxyfile || die "Making of Doxyfile failed"
