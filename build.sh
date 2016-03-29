@@ -167,7 +167,7 @@ cecho() {
   [[ -z $1 || -z $2 ]] && die "${FUNCNAME}: Missing argument"
   is_in "$1" "$colors" || die "${FUNCNAME}: Unknown color '$1' ($colors allowed)"
   echo -n "${!1}"
-  echo "${@:2}""${OFF}"
+  echo -e "${@:2}""${OFF}"
 }
 
 build_devdoc() {
@@ -691,7 +691,7 @@ for prog in "${progs[@]}"; do
       [[ $dev = "yes" && $("$GIT" rev-parse --abbrev-ref HEAD) = "stable" ]] && \
 	die "We build the devel version of $prog, but we are on the stable branch. Please checkout a devel branch like default with 'git -C $prog checkout master' (disable this check with the --no-branchcheck option)"
       #prevent to build devel csg with stable tools and so on
-      [[ $branch != $("$GIT" rev-parse --abbrev-ref HEAD) ]] && die "You are mixing branches: '$branch' (in $last_prog) vs '$("$GIT" rev-parse --abbrev-ref HEAD) (in $prog)' (disable this check with the --no-branchcheck option)\n You can change the branch with 'git -C $prog checkout BRANCHNAME'."
+      [[ $branch != $("$GIT" rev-parse --abbrev-ref HEAD) ]] && die "You are mixing branches: '$branch' (in $last_prog) vs '$("$GIT" rev-parse --abbrev-ref HEAD) (in $prog)' (disable this check with the --no-branchcheck option)\nYou can change the branch with 'git -C $prog checkout BRANCHNAME'."
     fi
   fi
   if [ "$do_clean_ignored" = "yes" ]; then
