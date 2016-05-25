@@ -80,7 +80,8 @@
 #version 2.0.1 -- 09.09.15 added proxy workaround for git
 #version 2.0.2 -- 23.09.15 dropped --dist-pristine 
 #version 2.0.3 -- 23.09.15 bump gmx version
-#version 2.0.3 -- 13.01.16 dropped --dist
+#version 2.0.4 -- 13.01.16 dropped --dist
+#version 2.0.5 -- 25.05.16 dropped --cmake and --gui use $CMAKE instead
 
 #defaults
 usage="Usage: ${0##*/} [options] [progs]"
@@ -126,11 +127,7 @@ progcheck="yes"
 progs=()
 
 self_download="no"
-cmake="cmake"
-for i in cmake-gui ccmake cmake; do
-  [[ -n $(type -p $i) ]] && break
-done
-cmake_gui="$i"
+cmake="${CMAKE:=cmake}"
 cmake_builddir="."
 
 rel=""
@@ -384,14 +381,11 @@ ADV                         Use CSG_MDRUN_STEPS environment variable to control 
 ADV     $(cecho GREEN --warn-to-errors)    Turn all warnings into errors (same as  $(cecho GREEN -D)$(cecho CYAN CMAKE_CXX_FLAGS=\'-Wall -Werror\'))
 ADV     $(cecho GREEN --Wall)              Show more warnings (same as $(cecho GREEN -D)$(cecho CYAN CMAKE_CXX_FLAGS=-Wall))
 ADV     $(cecho GREEN --devdoc)            Build a combined html doxygen for all programs (useful with $(cecho GREEN -U))
-ADV     $(cecho GREEN --cmake) $(cecho CYAN CMD)         Use $(cecho CYAN CMD) instead of cmake
-ADV                         Default: $cmake
 ADV     $(cecho GREEN --ninja)             Use ninja instead of make
 ADV                         Default: cmake's default (make)
 ADV     $(cecho GREEN --depth) $(cecho CYAN D)           Only git clone to depth $(cecho CYAN D) instead of whole history
 ADV     $(cecho GREEN --builddir) $(cecho CYAN DIR)      Do an out-of-source build in $(cecho CYAN DIR)
 ADV                         Default: $cmake_builddir
-        $(cecho GREEN --gui)               Use cmake with gui (same as $(cecho GREEN --cmake) $(cecho CYAN $cmake_gui))
     $(cecho GREEN -p), $(cecho GREEN --prefix) $(cecho CYAN PREFIX)     Use install prefix $(cecho CYAN PREFIX)
                             Default: $prefix
 
@@ -476,14 +470,6 @@ while [[ $# -gt 0 ]]; do
    -U | --just-update)
     do_update="only"
     shift 1;;
-   --gui)
-     cmake="$cmake_gui"
-     shift ;;
-   --cmake)
-    [[ -z $2 ]] && die "Missing argument after --cmake"
-    cmake="$2"
-    [[ -z $(type -p "$cmake") ]] && die "Custom cmake '$cmake' not found"
-    shift 2;;
    --builddir)
      [[ -z $2 ]] && die "Missing argument after --builddir"
      cmake_builddir="$2"
@@ -719,11 +705,9 @@ for prog in "${progs[@]}"; do
     pushd "$cmake_builddir" > /dev/null || die "Could not change into '$cmake_builddir'"
   fi
   if [[ $do_cmake == "yes" && -f ${cmake_srcdir}/CMakeLists.txt ]]; then
-    [[ -z $(type -p cmake) ]] && die "cmake not found"
-    cecho BLUE "cmake -DCMAKE_INSTALL_PREFIX='$prefix' ${cmake_opts[@]// /\\ } $rpath_opt ${cmake_srcdir}"
-    [[ $cmake != "cmake" ]] && "$cmake"  -DCMAKE_INSTALL_PREFIX="$prefix" "${cmake_opts[@]}" "$rpath_opt" "${cmake_srcdir}"
-    # we always run normal cmake in case user forgot to generate
-    cmake -DCMAKE_INSTALL_PREFIX="$prefix" "${cmake_opts[@]}" "$rpath_opt" "${cmake_srcdir}"
+    [[ -z $(type -p ${CMAKE}) ]] && die "Could not find ${CMAKE}"
+    cecho BLUE "${CMAKE} -DCMAKE_INSTALL_PREFIX='$prefix' ${cmake_opts[@]// /\\ } $rpath_opt ${cmake_srcdir}"
+    ${CMAKE} -DCMAKE_INSTALL_PREFIX="$prefix" "${cmake_opts[@]}" "$rpath_opt" "${cmake_srcdir}"
   fi
   if [[ $do_clean == "yes" ]]; then
     cecho GREEN "cleaning $prog"
