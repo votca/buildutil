@@ -82,6 +82,7 @@
 #version 2.0.3 -- 23.09.15 bump gmx version
 #version 2.0.4 -- 13.01.16 dropped --dist
 #version 2.0.5 -- 25.05.16 dropped --cmake and --gui use $CMAKE instead
+#version 2.0.6 -- 17.07.16 bumped gromacs version to 5.1.2
 
 #defaults
 usage="Usage: ${0##*/} [options] [progs]"
@@ -133,7 +134,7 @@ cmake_builddir="."
 rel=""
 selfurl="https://raw.githubusercontent.com/votca/buildutil/master/build.sh"
 clurl="https://raw.githubusercontent.com/votca/csg/stable/CHANGELOG.md"
-gromacs_ver="5.0.6"
+gromacs_ver="5.1.2"
 
 rpath_opt="-DCMAKE_INSTALL_RPATH_USE_LINK_PATH=ON"
 cmake_opts=()
@@ -527,7 +528,7 @@ while [[ $# -gt 0 ]]; do
     shift 2;;
    --gmx-release)
     gromacs_ver="$2"
-    [[ $relcheck = "yes" && ${2} != +([1-9])?(.[0-9])?(.[1-9]|-rc[1-9]) ]] && \
+    [[ $relcheck = "yes" && ${2} != [1-9]*([0-9])?(.[0-9])?(.[1-9]|-rc[1-9]) ]] && \
       die "--gmx-release option needs an argument which is a release (disable this check with --no-relcheck option)"
     shift 2;;
    -l | --latest)
