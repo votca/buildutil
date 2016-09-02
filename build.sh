@@ -544,7 +544,7 @@ while [[ $# -gt 0 ]]; do
     shift;;
    -d | --dev)
     dev=yes
-    all_progs="${all_progs} moo kmc ctp ctp-manual ctp-tutorials xtp"
+    all_progs="${all_progs} moo kmc ctp ctp-manual ctp-tutorials xtp xtp-manual"
     shift 1;;
   -*)
    die "Unknown option '$1'"
