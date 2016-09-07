@@ -71,3 +71,7 @@ cache:
 
 compiler:
   - gcc
+
+notifications:
+  email:
+    - votca-commits@googlegroups.com 
