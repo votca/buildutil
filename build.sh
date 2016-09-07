@@ -114,6 +114,7 @@ do_install="yes"
 
 do_update="no"
 do_devdoc="no"
+do_manual="no"
 dev="no"
 wait=
 verbose=
@@ -382,6 +383,7 @@ ADV                         Use CSG_MDRUN_STEPS environment variable to control 
 ADV     $(cecho GREEN --warn-to-errors)    Turn all warnings into errors (same as  $(cecho GREEN -D)$(cecho CYAN CMAKE_CXX_FLAGS=\'-Wall -Werror\'))
 ADV     $(cecho GREEN --Wall)              Show more warnings (same as $(cecho GREEN -D)$(cecho CYAN CMAKE_CXX_FLAGS=-Wall))
 ADV     $(cecho GREEN --devdoc)            Build a combined html doxygen for all programs (useful with $(cecho GREEN -U))
+ADV     $(cecho GREEN --build-manual)      Build a manual inside programs if available
 ADV     $(cecho GREEN --ninja)             Use ninja instead of make
 ADV                         Default: cmake's default (make)
 ADV     $(cecho GREEN --depth) $(cecho CYAN D)           Only git clone to depth $(cecho CYAN D) instead of whole history
@@ -499,6 +501,9 @@ while [[ $# -gt 0 ]]; do
    --devdoc)
     do_devdoc="yes"
     shift 1;;
+   --build-manual)
+    do_manual="yes"
+    shift 1;;
   --no-@(build|clean|cmake|install))
     eval do_"${1#--no-}"="no"
     shift 1;;
@@ -544,7 +549,7 @@ while [[ $# -gt 0 ]]; do
     shift;;
    -d | --dev)
     dev=yes
-    all_progs="${all_progs} moo kmc ctp ctp-manual ctp-tutorials xtp xtp-manual"
+    all_progs="${all_progs} moo kmc ctp ctp-manual ctp-tutorials xtp"
     shift 1;;
   -*)
    die "Unknown option '$1'"
@@ -721,6 +726,11 @@ for prog in "${progs[@]}"; do
   if [[ "$do_install" == "yes" ]]; then
     cecho GREEN "installing $prog"
     make_or_ninja install
+  fi
+  if [[ -d manual && $do_manual = yes ]]; then
+    cecho GREEN "buidling manual for $prog"
+    make_or_ninja manual
+    make_or_ninja installmanual
   fi
   if [[ -f $cmake_srcdir/CMakeLists.txt ]]; then
     popd > /dev/null || die "Could not change back"
