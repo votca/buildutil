@@ -48,8 +48,6 @@ env:
     - CSG_MDRUN_STEPS=500 TEST=spce/ibi J=4
 
 before_script:
-  - rm -vrf * .git
-  - wget https://raw.githubusercontent.com/votca/buildutil/master/build.sh && chmod 755 build.sh
   - mkdir -p "$HOME/votca/src" "$HOME/votca/share/votca/scripts/inverse"
   - if [[ ${MINIMAL} != yes ]]; then 
       wget -qO- https://www.hdfgroup.org/ftp/HDF5/releases/hdf5-${HDF5_VERSION}/src/hdf5-${HDF5_VERSION}.tar.gz | tar -xz &&
