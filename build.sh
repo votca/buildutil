@@ -278,7 +278,7 @@ get_url() {
     case $2 in
       *testsuite)
 	true;;
-      tools|csg*|moo|kmc|ctp*|*manual)
+      tools|csg*|moo|kmc|ctp*|*manual|xtp*)
 	[[ -z $rel ]] && die "${FUNCNAME}: rel variable not set"
 	[[ $rel = 1.[012]* ]] && 
 	echo "https://github.com/votca/downloads/raw/master/votca-${2}-${rel}.tar.gz" || \
