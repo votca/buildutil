@@ -83,6 +83,7 @@
 #version 2.0.4 -- 13.01.16 dropped --dist
 #version 2.0.5 -- 25.05.16 dropped --cmake and --gui use $CMAKE instead
 #version 2.0.6 -- 17.07.16 bumped gromacs version to 5.1.2
+#version 2.0.7 -- 20.09.16 bumped gromacs version to 5.1.4
 
 #defaults
 usage="Usage: ${0##*/} [options] [progs]"
@@ -135,7 +136,7 @@ cmake_builddir="."
 rel=""
 selfurl="https://raw.githubusercontent.com/votca/buildutil/master/build.sh"
 clurl="https://raw.githubusercontent.com/votca/csg/stable/CHANGELOG.md"
-gromacs_ver="5.1.2"
+gromacs_ver="5.1.4"
 
 rpath_opt="-DCMAKE_INSTALL_RPATH_USE_LINK_PATH=ON"
 cmake_opts=()
