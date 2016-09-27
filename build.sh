@@ -84,13 +84,14 @@
 #version 2.0.5 -- 25.05.16 dropped --cmake and --gui use $CMAKE instead
 #version 2.0.6 -- 17.07.16 bumped gromacs version to 5.1.2
 #version 2.0.7 -- 20.09.16 bumped gromacs version to 5.1.4
+#version 2.1.0 -- 26.09.16 added xtp to all_progs
 
 #defaults
 usage="Usage: ${0##*/} [options] [progs]"
 prefix="$HOME/votca"
 
 #this gets overriden by --dev option
-all_progs="tools csg csg-tutorials csgapps csg-testsuite csg-manual gromacs"
+all_progs="tools csg csg-tutorials csgapps csg-testsuite csg-manual xtp gromacs"
 #programs to build by default
 standard_progs="tools csg"
 
@@ -550,7 +551,7 @@ while [[ $# -gt 0 ]]; do
     shift;;
    -d | --dev)
     dev=yes
-    all_progs="${all_progs} moo kmc ctp ctp-manual ctp-tutorials xtp"
+    all_progs="${all_progs} moo kmc ctp ctp-manual ctp-tutorials"
     shift 1;;
   -*)
    die "Unknown option '$1'"
