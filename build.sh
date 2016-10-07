@@ -85,6 +85,7 @@
 #version 2.0.6 -- 17.07.16 bumped gromacs version to 5.1.2
 #version 2.0.7 -- 20.09.16 bumped gromacs version to 5.1.4
 #version 2.1.0 -- 26.09.16 added xtp to all_progs
+#version 2.1.1 -- 07.10.16 added support for curl for OSX
 
 #defaults
 usage="Usage: ${0##*/} [options] [progs]"
@@ -143,7 +144,6 @@ rpath_opt="-DCMAKE_INSTALL_RPATH_USE_LINK_PATH=ON"
 cmake_opts=()
 
 GIT="${GIT:=git}"
-WGET="${WGET:=wget}"
 
 BLUE="[34;01m"
 CYAN="[36;01m"
@@ -156,6 +156,21 @@ OFF="[0m"
 die () {
   [[ -n $1 ]] && cecho RED "$*" >&2
   exit 1
+}
+
+wget_or_curl() {
+  [[ -z $1 || -z $2 ]] && die "${FUNCNAME}: Missing argument"
+  local o="-O" q="-q" f p
+  for p in ${WGET} wget curl; do
+    [[ -n $(type -p "$p") ]] && break
+  done
+  [[ -z $p ]] && die "${FUNCNAME}: no download tool found (curl or wget)"
+  [[ $1 = -O ]] || die "${FUNCNAME}: 1st option has to be -O"
+  [[ $p = *curl* ]] && o="-o" && q="-s"
+  f="$2"
+  shift 2
+  [[ $1 = -q ]] && shift || q=
+  "${p}" "${o}" "$f" $q "$@"
 }
 
 is_in() {
@@ -224,10 +239,9 @@ download_and_upack_tarball() {
   cecho GREEN "Download tarball $tarball from ${url}"
   if [ "$self_download" = "no" ]; then
     [ -f "$tarball" ] && die "Tarball $tarball is already there, remove it first or add --selfdownload option"
-    [ -z "$(type -p "${WGET}")" ] && die "${WGET} is missing"
-    "${WGET}" "${url}"
+    wget_or_curl -O "${tarball}" "${url}"
   fi
-  [ -f "${tarball}" ] || die "${WGET} has failed to fetch the tarball (add --selfdownload option and copy ${tarball} in ${PWD} by hand)"
+  [ -f "${tarball}" ] || die "Could not fetch the tarball (add --selfdownload option and copy ${tarball} in ${PWD} by hand)"
   tardir="$(tar -tzf "${tarball}" | sed -e's#/.*$##' | sort -u)"
   [ -z "${tardir//*\\n*}" ] && die "Tarball $tarball contains zero or more then one directory ($tardir), please check by hand"
   [ -e "${tardir}" ] && die "Tarball unpack directory ${tardir} is already there, remove it first"
@@ -237,19 +251,13 @@ download_and_upack_tarball() {
 }
 
 get_version() {
-  sed -ne 's/^#version[[:space:]]*\([^[:space:]]*\)[[:space:]]*-- .*$/\1/p' "${1:--}" | sed -n '$p'
+  sed -ne 's/^#version[[:space:]]*\([^[:space:]]*\)[[:space:]]*-- .*$/\1/p' $1 | sed -n '$p'
 }
 
 get_webversion() {
   local version
-  if [[ $1 = "-q" ]]; then
-    version="$("${WGET}" -qO- "${selfurl}" | get_version)"
-  else
-    [[ -z $(type -p "${WGET}") ]] && die "${WGET} not found"
-    version="$("${WGET}" -qO- "${selfurl}" )" || die "${FUNCNAME}: ${WGET} fetch from $selfurl failed"
-    version="$(echo -e "${version}" | get_version)"
-    [[ -z ${version} ]] && die "${FUNCNAME}: Could not fetch new version number"
-  fi
+  version="$(wget_or_curl -O - -q "${selfurl}" | get_version)"
+  [[ -z ${version} ]] && die "${FUNCNAME}: Could not fetch new version number"
   echo "${version}"
 }
 
@@ -315,11 +323,10 @@ version_check() {
 }
 
 self_update() {
-  [[ -z $(type -p "${WGET}") ]] && die "${WGET} not found"
   if version_check; then
     cecho RED "I will try replace myself now with $selfurl"
     countdown 5
-    "${WGET}" -O "${self}" "${selfurl}"
+    wget_or_curl -O "${self}" "${selfurl}"
   else
     cecho GREEN "No updated needed"
   fi
@@ -539,12 +546,11 @@ while [[ $# -gt 0 ]]; do
       die "--gmx-release option needs an argument which is a release (disable this check with --no-relcheck option)"
     shift 2;;
    -l | --latest)
-    [[ -z $(type -p "${WGET}") ]] && die "${WGET} not found, specify it by hand using --release option"
-    rel=$("${WGET}" -O - -q "${clurl}" | \
+    rel=$(wget_or_curl -O - -q "${clurl}" | \
       sed -n 's/^## Version \([^ ]*\) .*/\1/p' | \
       sed -n '1p')
     [[ -z $rel || ${rel} != [1-9].[0-9]?(.[1-9]|_rc[1-9]) ]] && \
-      die "${WGET} could not get the version (found $rel), specify it by hand using --release option"
+      die "Could not get the version (found $rel), specify it by hand using --release option"
     shift;;
    --nocolor)
     unset BLUE CYAN CYANN GREEN OFF RED PURP
