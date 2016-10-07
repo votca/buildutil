@@ -209,7 +209,7 @@ prefix_clean() {
   for i in ${prefix}/{bin,include,lib{,32,64},share}; do
     [[ -d $i ]] && files+=( "$i" )
   done
-  if [[ ${#files[@]} -eq 0 ]]; then
+  if [[ ! -d ${prefix} || ${#files[@]} -eq 0 ]]; then
     cecho BLUE "Found nothing to clean"
     return
   fi
@@ -581,6 +581,7 @@ fi
 [[ ${#progs[@]} -eq 0 ]] && progs=( $standard_progs )
 [[ -z $prefix ]] && die "Error: prefix is empty"
 [[ $prefix = *WHERE/TO/INSTALL/VOTCA* ]] && die "Deine Mutti!!!\nGo and read the instruction again."
+#needed due to cd in in-source builds
 [[ $prefix = /* ]] || die "prefix has to be a global path (should start with a '/')"
 
 #infos
