@@ -86,6 +86,7 @@
 #version 2.0.7 -- 20.09.16 bumped gromacs version to 5.1.4
 #version 2.1.0 -- 26.09.16 added xtp to all_progs
 #version 2.1.1 -- 07.10.16 added support for curl for OSX
+#version 2.1.2 -- 12.11.16 bumped gromacs version to 2016.1 
 
 #defaults
 usage="Usage: ${0##*/} [options] [progs]"
@@ -138,7 +139,7 @@ cmake_builddir="."
 rel=""
 selfurl="https://raw.githubusercontent.com/votca/buildutil/master/build.sh"
 clurl="https://raw.githubusercontent.com/votca/csg/stable/CHANGELOG.md"
-gromacs_ver="5.1.4"
+gromacs_ver="2016.1"
 
 rpath_opt="-DCMAKE_INSTALL_RPATH_USE_LINK_PATH=ON"
 cmake_opts=()
