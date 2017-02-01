@@ -87,6 +87,7 @@
 #version 2.1.0 -- 26.09.16 added xtp to all_progs
 #version 2.1.1 -- 07.10.16 added support for curl for OSX
 #version 2.1.2 -- 12.11.16 bumped gromacs version to 2016.1 
+#version 2.1.3 -- 01.02.17 log stderr in --log
 
 #defaults
 usage="Usage: ${0##*/} [options] [progs]"
@@ -372,7 +373,7 @@ ADV                         Default: $gromacs_ver
     $(cecho GREEN -u), $(cecho GREEN --do-update)         Do an update of the sources using git
 ADV $(cecho GREEN -U), $(cecho GREEN --just-update)       Just update the source and do nothing else
 ADV $(cecho GREEN -c), $(cecho GREEN --clean-out)         Clean out the prefix (DANGEROUS)
-ADV   $(cecho GREEN --clean-ignored)       Remove ignored file from repository (SUPER DANGEROUS)
+ADV     $(cecho GREEN --clean-ignored)     Remove ignored file from repository (SUPER DANGEROUS)
 ADV     $(cecho GREEN --no-cmake)          Do not run cmake
 ADV $(cecho GREEN -D)$(cecho CYAN '*')                     Extra cmake options (maybe multiple times)
 ADV                         Do NOT put variables (XXX=YYY) here, just use environment variables
@@ -437,7 +438,7 @@ while [[ $# -gt 0 ]]; do
       echo "Logfile is $(cecho PURP "$2")"
       export VOTCA_LOG="$2"
       echo "Log of '${self} ${cmdopts[@]// /\\ }'" > "$2"
-      "${self}" "${cmdopts[@]}" | tee -a "$2"
+      "${self}" "${cmdopts[@]}" 2>&1 | tee -a "$2"
       exit $?
     fi
     shift 2;;
