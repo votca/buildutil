@@ -283,8 +283,10 @@ get_url() {
         echo "git://github.com/votca/$2";;
       gromacs)
 	[[ -n $http_proxy || -n $https_proxy ]] && \
-	echo "https://gerrit.gromacs.org/gromacs.git" || \
-	echo "git://git.gromacs.org/gromacs";;
+	echo "https://github.com/gromacs/gromacs.git" || \
+	echo "git://github.com/gromacs/gromacs.git";;
+	#echo "https://gerrit.gromacs.org/gromacs.git" || \
+	#echo "git://git.gromacs.org/gromacs";;
     esac
   elif [[ $1 = release ]]; then
     case $2 in
