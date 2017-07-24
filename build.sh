@@ -88,6 +88,8 @@
 #version 2.1.1 -- 07.10.16 added support for curl for OSX
 #version 2.1.2 -- 12.11.16 bumped gromacs version to 2016.1 
 #version 2.1.3 -- 01.02.17 log stderr in --log
+#version 2.1.4 -- 22.07.17 bumped gromacs version to 2016.3
+#version 2.1.5 -- 22.07.17 make builddir=build the default 
 
 #defaults
 usage="Usage: ${0##*/} [options] [progs]"
@@ -135,12 +137,12 @@ progs=()
 
 self_download="no"
 cmake="${CMAKE:=cmake}"
-cmake_builddir="."
+cmake_builddir="build"
 
 rel=""
 selfurl="https://raw.githubusercontent.com/votca/buildutil/master/build.sh"
 clurl="https://raw.githubusercontent.com/votca/csg/stable/CHANGELOG.md"
-gromacs_ver="2016.1"
+gromacs_ver="2016.3"
 
 rpath_opt="-DCMAKE_INSTALL_RPATH_USE_LINK_PATH=ON"
 cmake_opts=()
