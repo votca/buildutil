@@ -382,7 +382,7 @@ ADV     $(cecho GREEN --no-cmake)          Do not run cmake
 ADV $(cecho GREEN -D)$(cecho CYAN '*')                     Extra cmake options (maybe multiple times)
 ADV                         Do NOT put variables (XXX=YYY) here, just use environment variables
 ADV     $(cecho GREEN --minimal)           Build with minimum deps
-ADV                         $(cecho GREEN -D)$(cecho CYAN WITH_FFTW=OFF) $(cecho GREEN -D)$(cecho CYAN WITH_GSL=OFF) $(cecho GREEN -D)$(cecho CYAN CMAKE_DISABLE_FIND_PACKAGE_GSL=ON) $(cecho GREEN -D)$(cecho CYAN WITH_MKL=OFF) $(cecho GREEN -D)$(cecho CYAN CMAKE_DISABLE_FIND_PACKAGE_MKL=ON) $(cecho GREEN -D)$(cecho CYAN BUILD_MANPAGES=OFF) $(cecho GREEN -D)$(cecho CYAN WITH_GMX=OFF) $(cecho GREEN -D)$(cecho CYAN WITH_H5MD=OFF))
+ADV                         (same as $(cecho GREEN -D)$(cecho CYAN WITH_FFTW=OFF) $(cecho GREEN -D)$(cecho CYAN WITH_GSL=OFF) $(cecho GREEN -D)$(cecho CYAN CMAKE_DISABLE_FIND_PACKAGE_GSL=ON) $(cecho GREEN -D)$(cecho CYAN WITH_MKL=OFF) $(cecho GREEN -D)$(cecho CYAN CMAKE_DISABLE_FIND_PACKAGE_MKL=ON) $(cecho GREEN -D)$(cecho CYAN BUILD_MANPAGES=OFF) $(cecho GREEN -D)$(cecho CYAN WITH_GMX=OFF) $(cecho GREEN -D)$(cecho CYAN WITH_H5MD=OFF) $(cecho GREEN -D)$(cecho CYAN CMAKE_DISABLE_FIND_PACKAGE_HDF5=ON))
 ADV                         Functionality, which is really needed can explicitly be enabled again with $(cecho GREEN -D)$(cecho CYAN XXX=)$(cecho BLUE ON)
 ADV $(cecho GREEN -R), $(cecho GREEN --no-rpath)          Remove rpath from the binaries (cmake default)
 ADV     $(cecho GREEN --no-clean)          Don't run make clean
@@ -539,7 +539,7 @@ while [[ $# -gt 0 ]]; do
     cmake_opts+=( -D"${2}" )
     shift 2;;
   --minimal)
-    cmake_opts+=( --no-warn-unused-cli -DWITH_FFTW=OFF -DWITH_GSL=OFF -DCMAKE_DISABLE_FIND_PACKAGE_GSL=ON -DWITH_MKL=OFF -DCMAKE_DISABLE_FIND_PACKAGE_MKL=ON -DBUILD_MANPAGES=OFF -DWITH_GMX=OFF -DWITH_SQLITE3=OFF -DWITH_H5MD=OFF )
+    cmake_opts+=( --no-warn-unused-cli -DWITH_FFTW=OFF -DWITH_GSL=OFF -DCMAKE_DISABLE_FIND_PACKAGE_GSL=ON -DWITH_MKL=OFF -DCMAKE_DISABLE_FIND_PACKAGE_MKL=ON -DBUILD_MANPAGES=OFF -DWITH_GMX=OFF -DWITH_SQLITE3=OFF -DWITH_H5MD=OFF -DCMAKE_DISABLE_FIND_PACKAGE_HDF5=ON )
     shift;;
    --release)
     rel="$2"
