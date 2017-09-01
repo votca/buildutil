@@ -1,6 +1,6 @@
 #!/bin/bash
 #
-# Copyright 2009-2016 The VOTCA Development Team (http://www.votca.org)
+# Copyright 2009-2017 The VOTCA Development Team (http://www.votca.org)
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
@@ -90,6 +90,7 @@
 #version 2.1.3 -- 01.02.17 log stderr in --log
 #version 2.1.4 -- 22.07.17 bumped gromacs version to 2016.3
 #version 2.1.5 -- 22.07.17 make builddir=build the default 
+#version 2.1.6 -- 31.08.17 fix make clean for builddir!=.
 
 #defaults
 usage="Usage: ${0##*/} [options] [progs]"
@@ -712,7 +713,7 @@ for prog in "${progs[@]}"; do
     fi
   fi
   if [ "$do_clean" == "yes" ]; then
-    rm -f CMakeCache.txt
+    rm -f ${cmake_builddir}/CMakeCache.txt
   fi
   cmake_srcdir="$PWD"
   if [[ -f CMakeLists.txt ]]; then
