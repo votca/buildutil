@@ -91,6 +91,7 @@
 #version 2.1.4 -- 22.07.17 bumped gromacs version to 2016.3
 #version 2.1.5 -- 22.07.17 make builddir=build the default 
 #version 2.1.6 -- 31.08.17 fix make clean for builddir!=.
+#version 2.1.7 -- 08.12.17 bumped gromacs version to 2016.4
 
 #defaults
 usage="Usage: ${0##*/} [options] [progs]"
@@ -143,7 +144,7 @@ cmake_builddir="build"
 rel=""
 selfurl="https://raw.githubusercontent.com/votca/buildutil/master/build.sh"
 clurl="https://raw.githubusercontent.com/votca/csg/stable/CHANGELOG.md"
-gromacs_ver="2016.3"
+gromacs_ver="2016.4"
 
 rpath_opt="-DCMAKE_INSTALL_RPATH_USE_LINK_PATH=ON"
 cmake_opts=()
