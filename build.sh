@@ -1,6 +1,6 @@
 #!/bin/bash
 #
-# Copyright 2009-2017 The VOTCA Development Team (http://www.votca.org)
+# Copyright 2009-2018 The VOTCA Development Team (http://www.votca.org)
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
@@ -92,6 +92,7 @@
 #version 2.1.5 -- 22.07.17 make builddir=build the default 
 #version 2.1.6 -- 31.08.17 fix make clean for builddir!=.
 #version 2.1.7 -- 08.12.17 bumped gromacs version to 2016.4
+#version 2.1.8 -- 11.04.18 bumped gromacs version to 2016.4
 
 #defaults
 usage="Usage: ${0##*/} [options] [progs]"
@@ -584,6 +585,17 @@ if version_check -q; then
   cecho RED "########################################$x"
   die
   unset x
+fi
+
+if [[ -z ${I_KNOW_WHAT_I_AM_DOING} ]]; then
+  cecho RED "############################################################"
+  cecho RED "# After nearly 10 years, VOTCA build.sh is going away!     #"
+  cecho RED "# Please try out out the next generation build system:     #"
+  cecho RED "# git clone --recursive https://github.com/votca/votca.git #"
+  cecho RED "# Details in the README.md inside the repository           #"
+  cecho RED "# Report issue here: https://github.com/votca/votca/issues #"
+  cecho RED "############################################################"
+  countdown 20
 fi
 
 [[ ${#progs[@]} -eq 0 ]] && progs=( $standard_progs )
