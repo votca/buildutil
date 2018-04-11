@@ -92,7 +92,7 @@
 #version 2.1.5 -- 22.07.17 make builddir=build the default 
 #version 2.1.6 -- 31.08.17 fix make clean for builddir!=.
 #version 2.1.7 -- 08.12.17 bumped gromacs version to 2016.4
-#version 2.1.8 -- 11.04.18 add poiter to new buildsystem
+#version 2.1.8 -- 11.04.18 add pointer to new buildsystem
 
 #defaults
 usage="Usage: ${0##*/} [options] [progs]"
