@@ -9,8 +9,7 @@ sudo: false
 addons:
   apt:
     sources:
-      - boost-latest 
-      - george-edison55-precise-backports
+      - sourceline: 'ppa:kzemek/boost'
       - ubuntu-toolchain-r-test
     packages:
       - ccache
@@ -21,7 +20,12 @@ addons:
       - cmake-data
       - libgsl0-dev
       - txt2tags
-      - libboost1.55-all-dev
+      - libboost1.58-dev
+      - libboost-program-options1.58-dev
+      - libboost-filesystem1.58-dev
+      - libboost-system1.58-dev
+      - libboost-serialization1.58-dev
+      - libboost-timer1.58-dev
       - libexpat1-dev
       - libsqlite3-dev
       - libhdf5-serial-dev
