@@ -93,6 +93,7 @@
 #version 2.1.6 -- 31.08.17 fix make clean for builddir!=.
 #version 2.1.7 -- 08.12.17 bumped gromacs version to 2016.4
 #version 2.1.8 -- 11.04.18 add pointer to new buildsystem
+#version 2.1.9 -- 21.04.18 removed kmc and moo
 
 #defaults
 usage="Usage: ${0##*/} [options] [progs]"
@@ -282,7 +283,7 @@ get_url() {
   [[ -z $1 || -z $2  ]] && die "${FUNCNAME}: Missing argument"
   if [[ $1 = source ]]; then
     case $2 in
-      tools|csg*|kmc|ctp*|xtp*)
+      tools|csg*|ctp*|xtp*)
 	[[ -n $http_proxy || -n $https_proxy ]] && \
         echo "https://github.com/votca/$2" || \
         echo "git://github.com/votca/$2";;
@@ -297,7 +298,7 @@ get_url() {
     case $2 in
       *testsuite)
 	true;;
-      tools|csg*|kmc|ctp*|*manual|xtp*)
+      tools|csg*|ctp*|*manual|xtp*)
 	[[ -z $rel ]] && die "${FUNCNAME}: rel variable not set"
 	[[ $rel = 1.[012]* ]] && 
 	echo "https://github.com/votca/downloads/raw/master/votca-${2}-${rel}.tar.gz" || \
@@ -566,7 +567,7 @@ while [[ $# -gt 0 ]]; do
     shift;;
    -d | --dev)
     dev=yes
-    all_progs="${all_progs} kmc ctp ctp-manual ctp-tutorials"
+    all_progs="${all_progs} ctp ctp-manual ctp-tutorials"
     shift 1;;
   -*)
    die "Unknown option '$1'"
