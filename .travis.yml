@@ -11,6 +11,7 @@ addons:
     sources:
       - sourceline: 'ppa:kzemek/boost'
       - ubuntu-toolchain-r-test
+      - sourceline: 'ppa:lkoppel/robotics'
     packages:
       - ccache
       - gcc-4.8
@@ -41,6 +42,9 @@ addons:
       - python-numpy
       - gnuplot-nox
       - octave
+      - libeigen3-dev
+      - libxc-dev
+      - libceres-dev
 
 env:
   global:
