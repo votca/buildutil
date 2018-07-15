@@ -94,6 +94,7 @@
 #version 2.1.7 -- 08.12.17 bumped gromacs version to 2016.4
 #version 2.1.8 -- 11.04.18 add pointer to new buildsystem
 #version 2.1.9 -- 21.04.18 removed kmc and moo
+#version 2.2.0 -- 15.07.18 add --do-test
 
 #defaults
 usage="Usage: ${0##*/} [options] [progs]"
@@ -122,6 +123,7 @@ do_build="yes"
 do_cmake="yes"
 do_clean="yes"
 do_install="yes"
+do_test="no"
 
 do_update="no"
 do_devdoc="no"
@@ -358,6 +360,7 @@ show_help () {
     - run cmake (unless --no-cmake)
     - make clean (unless --no-clean given)
     - make (unless --no-build given)
+    - make test (if --do-test given)
     - make install (disable with --no-install)
 
 ADV The most recent version can be found at:
@@ -488,6 +491,10 @@ while [[ $# -gt 0 ]]; do
     shift 1;;
    -u | --do-update)
     do_update="yes"
+    shift 1;;
+   --do-test)
+    do_test="yes"
+    cmake_opts+=( -DENABLE_TESTING=ON )
     shift 1;;
    -U | --just-update)
     do_update="only"
@@ -752,6 +759,12 @@ for prog in "${progs[@]}"; do
   if [[ $do_build == "yes" ]]; then
     cecho GREEN "buidling $prog"
     make_or_ninja
+  fi
+  if [[ $do_test == "yes" ]]; then
+    [[ ${prog} != gromacs ]] || make_or_ninja tests
+    cecho GREEN "testing $prog"
+    # tests for csg-tutorials is handled below
+    [[ ${prog} = csg-tutorials && -n ${tests} ]] || make_or_ninja test
   fi
   if [[ "$do_install" == "yes" ]]; then
     cecho GREEN "installing $prog"
