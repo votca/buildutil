@@ -764,7 +764,7 @@ for prog in "${progs[@]}"; do
     [[ ${prog} != gromacs ]] || make_or_ninja tests
     cecho GREEN "testing $prog"
     # tests for csg-tutorials is handled below
-    [[ ${prog} = csg-tutorials && -n ${tests} ]] || make_or_ninja test
+    [[ ${prog} = csg-tutorials && -n ${tests} ]] || make_or_ninja test ${verbose:+CTEST_OUTPUT_ON_FAILURE=1}
   fi
   if [[ "$do_install" == "yes" ]]; then
     cecho GREEN "installing $prog"
