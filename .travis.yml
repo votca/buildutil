@@ -14,8 +14,8 @@ addons:
       - sourceline: 'ppa:lkoppel/robotics'
     packages:
       - ccache
-      - gcc-4.8
-      - g++-4.8
+      - gcc-4.9
+      - g++-4.9
       - libfftw3-dev
       - cmake
       - cmake-data
