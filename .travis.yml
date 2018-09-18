@@ -14,8 +14,8 @@ addons:
       - sourceline: 'ppa:lkoppel/robotics'
     packages:
       - ccache
-      - gcc-4.8
-      - g++-4.8
+      - gcc-4.9
+      - g++-4.9
       - libfftw3-dev
       - cmake
       - cmake-data
@@ -51,7 +51,7 @@ env:
   global:
     - GMX_MAX_THREADS=8
     - CCACHE_CPP2=yes #for clang
-    - GVER=4.8
+    - GVER=4.9
   matrix: #NINJA=1 is currently not support by Travis' cmake, enable when >=2.8.9
     - CTP=yes WALL=yes MAN=yes BDIR=build J=4
     - CTP=yes WERROR=yes MAN=yes BDIR=build J=4
@@ -67,7 +67,7 @@ before_script:
 
 script:
   - PATH="$HOME/hdf5:$PATH" ./build.sh -Wu $([[ ${TRAVIS_BRANCH} = stable ]] || echo "--dev") --prefix "$HOME/votca"
-    ${TYPE:+-DCMAKE_BUILD_TYPE=${TYPE}} --do-test --verbose
+    ${TYPE:+-DCMAKE_BUILD_TYPE=${TYPE}} --verbose
     ${TEST:+--runtest=$TEST} ${WERROR:+--warn-to-errors} -DWITH_H5MD=ON ${MINIMAL:+--minimal} ${MAN:+--devdoc}
     ${J:+-j$J} ${BDIR:+--builddir=$BDIR} ${NINJA:+--ninja} ${WALL:+--Wall} ${GMX_VERSION:+--gmx-release ${GMX_VERSION}}
     --directory "$HOME/votca/src" --no-clean --depth 1 -DGMX_USE_RDTSCP=OFF ${GMX_DOUBLE:+-DGMX_DOUBLE=yes}
