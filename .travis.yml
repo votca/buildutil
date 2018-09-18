@@ -74,6 +74,13 @@ script:
     tools $([[ ${MINIMAL} ]] || echo gromacs) csg csgapps ${MAN:+csg-manual} ${TEST:+csg-tutorials}
     ${CTP:+ctp} ${XTP:+ctp xtp}
 
+branches:
+  only:
+  - master
+  - development
+  - stable
+  - next
+
 cache:
   - ccache
 
