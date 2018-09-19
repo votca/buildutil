@@ -14,8 +14,8 @@ addons:
       - sourceline: 'ppa:lkoppel/robotics'
     packages:
       - ccache
-      - gcc-4.9
-      - g++-4.9
+      - gcc-5
+      - g++-5
       - libfftw3-dev
       - cmake
       - cmake-data
@@ -51,7 +51,7 @@ env:
   global:
     - GMX_MAX_THREADS=8
     - CCACHE_CPP2=yes #for clang
-    - GVER=4.9
+    - GVER=5
   matrix: #NINJA=1 is currently not support by Travis' cmake, enable when >=2.8.9
     - CTP=yes WALL=yes MAN=yes BDIR=build J=4
     - CTP=yes WERROR=yes MAN=yes BDIR=build J=4
