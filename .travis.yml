@@ -52,6 +52,7 @@ env:
     - GMX_MAX_THREADS=8
     - CCACHE_CPP2=yes #for clang
     - GVER=5
+    - I_KNOW_WHAT_I_AM_DOING=yes
   matrix: #NINJA=1 is currently not support by Travis' cmake, enable when >=2.8.9
     - CTP=yes WALL=yes MAN=yes BDIR=build J=4
     - CTP=yes WERROR=yes MAN=yes BDIR=build J=4

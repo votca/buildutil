@@ -603,7 +603,7 @@ if [[ -z ${I_KNOW_WHAT_I_AM_DOING} ]]; then
   cecho RED "# Details in the README.md inside the repository           #"
   cecho RED "# Report issue here: https://github.com/votca/votca/issues #"
   cecho RED "############################################################"
-  countdown 20
+  die
 fi
 
 [[ ${#progs[@]} -eq 0 ]] && progs=( $standard_progs )
