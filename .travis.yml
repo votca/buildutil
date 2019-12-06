@@ -6,74 +6,8 @@ language: cpp
 
 sudo: false
 
-addons:
-  apt:
-    sources:
-      - sourceline: 'ppa:kzemek/boost'
-      - ubuntu-toolchain-r-test
-      - sourceline: 'ppa:lkoppel/robotics'
-    packages:
-      - ccache
-      - gcc-5
-      - g++-5
-      - libfftw3-dev
-      - cmake
-      - cmake-data
-      - libgsl0-dev
-      - txt2tags
-      - libboost1.58-dev
-      - libboost-program-options1.58-dev
-      - libboost-filesystem1.58-dev
-      - libboost-system1.58-dev
-      - libboost-serialization1.58-dev
-      - libboost-timer1.58-dev
-      - libboost-test1.58-dev
-      - libexpat1-dev
-      - libsqlite3-dev
-      - libhdf5-serial-dev
-      - pkg-config
-      - pgf
-      - texlive-fonts-recommended
-      - texlive-latex-extra
-      - texlive-latex-recommended
-      - cm-super
-      - doxygen
-      - graphviz
-      - ghostscript
-      - python-numpy
-      - gnuplot-nox
-      - octave
-      - libeigen3-dev
-      - libxc-dev
-      - libceres-dev
-
-env:
-  global:
-    - GMX_MAX_THREADS=8
-    - CCACHE_CPP2=yes #for clang
-    - GVER=5
-    - I_KNOW_WHAT_I_AM_DOING=yes
-  matrix: #NINJA=1 is currently not support by Travis' cmake, enable when >=2.8.9
-    - CTP=yes WALL=yes MAN=yes BDIR=build J=4
-    - CTP=yes WERROR=yes MAN=yes BDIR=build J=4
-    - XTP=yes WALL=yes MAN=yes BDIR=build J=4
-    - XTP=yes WERROR=yes MAN=yes BDIR=build J=4
-    - MINIMAL=yes J=4
-    - CSG_MDRUN_STEPS=500 TEST=spce/ibi J=4
-
-before_script:
-  - mkdir -p "$HOME/votca/src"
-  - if [[ ${MAN} ]]; then git clone --depth=1 https://github.com/votca/doxygen.git "$HOME/votca/src/devdoc"; fi 
-  - if [[ ${GVER} ]]; then export CC=gcc-${GVER}; export CXX=g++-${GVER}; fi
-
 script:
-  - PATH="$HOME/hdf5:$PATH" ./build.sh -Wu $([[ ${TRAVIS_BRANCH} = stable ]] || echo "--dev") --prefix "$HOME/votca"
-    ${TYPE:+-DCMAKE_BUILD_TYPE=${TYPE}} --do-test --verbose
-    ${TEST:+--runtest=$TEST} ${WERROR:+--warn-to-errors} -DWITH_H5MD=ON ${MINIMAL:+--minimal} ${MAN:+--devdoc}
-    ${J:+-j$J} ${BDIR:+--builddir=$BDIR} ${NINJA:+--ninja} ${WALL:+--Wall} ${GMX_VERSION:+--gmx-release ${GMX_VERSION}}
-    --directory "$HOME/votca/src" --no-clean --depth 1 -DGMX_USE_RDTSCP=OFF ${GMX_DOUBLE:+-DGMX_DOUBLE=yes}
-    tools $([[ ${MINIMAL} ]] || echo gromacs) csg csgapps ${MAN:+csg-manual} ${TEST:+csg-tutorials}
-    ${CTP:+ctp} ${XTP:+ctp xtp}
+  - true
 
 branches:
   only:
